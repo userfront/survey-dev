@@ -1,23 +1,17 @@
-import logo from './logo.svg';
-import './App.css';
+import * as Survey from "survey-react";
+import "survey-react/modern.css";
+import questions from "./questions.js";
+
+Survey.StylesManager.applyTheme("modern");
+const survey = new Survey.Model(questions);
+survey.onComplete.add(function (result) {
+  console.log(result.data);
+});
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Survey.Survey model={survey} />
     </div>
   );
 }
