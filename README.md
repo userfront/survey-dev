@@ -82,9 +82,41 @@ Add to package.json:
 "proxy": "http://localhost:5000"
 ```
 
-Now in one terminal, you can run `npm run serve` to start the frontend on localhost:3000. In another terminal you can run `node server.js` to start the backend on localhost:5000.
+We also want our backend server to automatically reload any changes we make, and we can use `nodemon` to accomplish this during development.
+
+```
+npm install nodemon --save-dev
+```
+
+Now in one terminal, you can run `npm run serve` to start the frontend on localhost:3000. In another terminal you can run `nodemon server.js` to start the backend on localhost:5000.
 
 With both of these running, visiting http://localhost:3000 should show the survey, and visiting http://localhost:5000/ping should return "pong".
+
+### A note about servers
+
+At this point, we have 2 servers running locally:
+
+| Location              | Tech             | Command           | Purpose                                          |
+| --------------------- | ---------------- | ----------------- | ------------------------------------------------ |
+| http://localhost:3000 | Create React App | npm start         | Serve the hot-reloaded React files.              |
+| http://localhost:5000 | Express.js       | nodemon server.js | Receive API requests and interact with database. |
+
+In production, we will only use the Express server; it will serve both the API and the files for our frontend React application. The React files will be added to a new `/build` folder during deploy.
+
+These lines in `server.js` will be responsible for serving the compiled React assets when in production:
+
+```js
+// server.js
+// Serve assets in the /build folder
+app.use(express.static(path.join(__dirname, "build")));
+
+...
+
+// Serve the /build/index.html file when the "/" path is requested
+app.get("/", async (req, res) => {
+  return res.sendFile(path.join(__dirname, "build", "index.html"));
+});
+```
 
 ## Add a database connection
 
@@ -207,21 +239,21 @@ const server = app.listen(port, () =>
 module.exports = server;
 ```
 
-Now when we start the server:
+Now when we have the server running with:
 
 ```
-node server.js
+nodemon server.js
 ```
 
 And visit http://localhost:5000/ping
 
-The terminal should note the DB connection:
+The terminal should initiate the database connection:
 
 ```
 Executing (default): SELECT 1+1 AS result
 ```
 
-### Add a table to the DB
+### Add a table to the database
 
 We will use Sequelize-CLI to add a table using migrations.
 
@@ -394,7 +426,48 @@ module.exports = db;
 // Update server.js
 app.get("/ping", async (req, res) => {
   const responses = await sequelize.models.Response.findAll();
-  console.log(responses);
-  return res.send("pong");
+  return res.send({ responses });
 });
 ```
+
+Now when we visit `http://localhost:5000/ping` in the browser, it will read all the responses from the database and return them. Currently that is empty, so the response looks like:
+
+```
+{
+  responses: []
+}
+```
+
+## Testing
+
+At this point, it will be easier to develop our backend API using tests, instead of doing guess-and-check in the browser over and over.
+
+```
+npm i mocha chai --save-dev
+
+mkdir api/test
+touch api/test/test.config.js
+touch api/test/mocha.config.js
+touch api/test/responses.crud.spec.js
+```
+
+Add to package.json
+
+```json
+// package.json
+"scripts": {
+  "start": "react-scripts start",
+  "build": "react-scripts build",
+  "test": "react-scripts test",
+  "eject": "react-scripts eject",
+  "test-backend": "NODE_ENV=test mocha ./api/test --exit",
+  "test-backend:watch": "NODE_ENV=test mocha --watch ./api/test ./api --file ./api/test/mocha.config.js"
+}
+```
+
+Now in the terminal we can run:
+
+| Command                      | Action                                             |
+| ---------------------------- | -------------------------------------------------- |
+| `npm run test-backend`       | Run the API test suite one time.                   |
+| `npm run test-backend:watch` | Run the API test suite whenever a file is changed. |

@@ -22,7 +22,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "test-backend": "NODE_ENV=test mocha ./api/test --exit",
+    "test-backend:watch": "NODE_ENV=test mocha --watch ./api/test ./api --file ./api/test/mocha.config.js"
   },
   "proxy": "http://localhost:5000",
   "eslintConfig": {
@@ -44,6 +46,9 @@
     ]
   },
   "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^8.2.0",
+    "nodemon": "^2.0.6",
     "sequelize-cli": "^6.2.0"
   }
 }

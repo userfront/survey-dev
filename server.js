@@ -9,8 +9,7 @@ const { sequelize } = require("./api/database/instance.js");
 
 app.get("/ping", async (req, res) => {
   const responses = await sequelize.models.Response.findAll();
-  console.log(responses);
-  return res.send("pong");
+  return res.send({ responses });
 });
 
 app.get("/", async (req, res) => {
