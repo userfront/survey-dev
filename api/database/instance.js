@@ -17,6 +17,8 @@ const sequelize = new Sequelize(
   }
 );
 
+db.modelNames = [];
+
 fs.readdirSync(modelsDirectory)
   .filter((file) => {
     return file.indexOf(".") !== 0 && file.slice(-3) === ".js";
@@ -27,6 +29,7 @@ fs.readdirSync(modelsDirectory)
       Sequelize.DataTypes
     );
     db[model.name] = model;
+    db.modelNames.push(model.name);
   });
 
 Object.keys(db).forEach((modelName) => {

@@ -3,13 +3,28 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const app = express();
 app.use(express.static(path.join(__dirname, "build")));
+app.use(bodyParser.json());
 
 // Set up sequelize
 const { sequelize } = require("./api/database/instance.js");
 
-app.get("/ping", async (req, res) => {
-  const responses = await sequelize.models.Response.findAll();
-  return res.send({ responses });
+app.all("/survey-responses", function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  next();
+});
+
+app.get("/survey-responses", async (req, res) => {
+  const surveyResponses = await sequelize.models.SurveyResponse.findAll();
+  return res.send({ surveyResponses });
+});
+
+app.post("/survey-responses", async (req, res) => {
+  const surveyResponse = await sequelize.models.SurveyResponse.create({
+    userId: 1,
+    data: req.body.data,
+  });
+  return res.send(surveyResponse);
 });
 
 app.get("/", async (req, res) => {

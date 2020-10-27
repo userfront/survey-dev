@@ -60,8 +60,14 @@ const path = require("path");
 const app = express();
 app.use(express.static(path.join(__dirname, "build")));
 
-app.get("/ping", function (req, res) {
-  return res.send("pong");
+app.all("/survey-responses", function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  next();
+});
+
+app.get("/survey-responses", function (req, res) {
+  return res.send("Coming soon");
 });
 
 app.get("/", function (req, res) {
@@ -90,7 +96,7 @@ npm install nodemon --save-dev
 
 Now in one terminal, you can run `npm run serve` to start the frontend on localhost:3000. In another terminal you can run `nodemon server.js` to start the backend on localhost:5000.
 
-With both of these running, visiting http://localhost:3000 should show the survey, and visiting http://localhost:5000/ping should return "pong".
+With both of these running, visiting http://localhost:3000 should show the survey, and visiting http://localhost:5000/survey-responses should return "Coming soon".
 
 ### A note about servers
 
@@ -221,10 +227,16 @@ app.use(express.static(path.join(__dirname, "build")));
 // Set up sequelize
 const { sequelize } = require("./api/database/instance.js");
 
-app.get("/ping", async (req, res) => {
+app.all("/survey-responses", function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  next();
+});
+
+app.get("/survey-responses", async (req, res) => {
   // Check the DB connection
   await sequelize.authenticate();
-  return res.send("pong");
+  return res.send("Coming soon");
 });
 
 app.get("/", async (req, res) => {
@@ -245,7 +257,7 @@ Now when we have the server running with:
 nodemon server.js
 ```
 
-And visit http://localhost:5000/ping
+And visit http://localhost:5000/survey-responses
 
 The terminal should initiate the database connection:
 
@@ -285,7 +297,7 @@ module.exports = {
 Now we can create a migration that we will use to generate the database table
 
 ```
-npx sequelize migration:create --name create-response
+npx sequelize migration:create --name create-survey-response
 ```
 
 Update the file that was created in `api/database/migrations/...`
@@ -295,7 +307,7 @@ Update the file that was created in `api/database/migrations/...`
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable("Responses", {
+    await queryInterface.createTable("SurveyResponses", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -323,7 +335,7 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable("Responses");
+    await queryInterface.dropTable("SurveyResponses");
   },
 };
 ```
@@ -339,16 +351,16 @@ This created our DB table. If we wanted to undo this step, we could run `npx seq
 ### Create DB model
 
 ```
-touch api/models/response.js
+touch api/models/survey-response.js
 ```
 
 ```js
-// api/models/response.js
+// api/models/survey-response.js
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
   return sequelize.define(
-    "Response",
+    "SurveyResponse",
     {
       userId: {
         allowNull: false,
@@ -396,6 +408,8 @@ const sequelize = new Sequelize(
   }
 );
 
+db.modelNames = [];
+
 fs.readdirSync(modelsDirectory)
   .filter((file) => {
     return file.indexOf(".") !== 0 && file.slice(-3) === ".js";
@@ -406,6 +420,7 @@ fs.readdirSync(modelsDirectory)
       Sequelize.DataTypes
     );
     db[model.name] = model;
+    db.modelNames.push(model.name);
   });
 
 Object.keys(db).forEach((modelName) => {
@@ -424,17 +439,17 @@ module.exports = db;
 
 ```js
 // Update server.js
-app.get("/ping", async (req, res) => {
-  const responses = await sequelize.models.Response.findAll();
-  return res.send({ responses });
+app.get("/survey-responses", async (req, res) => {
+  const surveyResponses = await sequelize.models.SurveyResponse.findAll();
+  return res.send({ surveyResponses });
 });
 ```
 
-Now when we visit `http://localhost:5000/ping` in the browser, it will read all the responses from the database and return them. Currently that is empty, so the response looks like:
+Now when we visit `http://localhost:5000/survey-responses` in the browser, it will read all the survey responses from the database and return them. Currently that is empty, so the response body looks like:
 
 ```
 {
-  responses: []
+  surveyResponses: []
 }
 ```
 
@@ -448,7 +463,7 @@ npm i mocha chai --save-dev
 mkdir api/test
 touch api/test/test.config.js
 touch api/test/mocha.config.js
-touch api/test/responses.crud.spec.js
+touch api/test/survey-responses.crud.spec.js
 ```
 
 Add to package.json
@@ -471,3 +486,263 @@ Now in the terminal we can run:
 | ---------------------------- | -------------------------------------------------- |
 | `npm run test-backend`       | Run the API test suite one time.                   |
 | `npm run test-backend:watch` | Run the API test suite whenever a file is changed. |
+
+Mocha will start up the server each time we run it, so we want to make sure to stop the server after the test suite runs.
+
+```js
+// mocha.config.js
+const server = require("../../server.js");
+
+after(async () => {
+  return new Promise((resolve, reject) => {
+    server.close(() => {
+      resolve();
+    });
+  });
+});
+```
+
+In the `test.config.js` file, we can define a `resetDb` helper function for our tests
+
+```js
+// test.config.js
+const { sequelize, modelNames } = require("../database/instance.js");
+
+const Test = {};
+
+const resetTable = (modelName) => {
+  if (!sequelize.models[modelName]) throw `modelName ${modelName} undefined`;
+  return sequelize.models[modelName].sync({ force: true, logging: false });
+};
+
+Test.resetDb = async () => {
+  let deferreds = [];
+  modelNames.map((name) => {
+    deferreds.push(resetTable(name));
+  });
+  return Promise.all(deferreds);
+};
+
+module.exports = Test;
+```
+
+Now we can write our first test:
+
+```js
+// api/test/survey-responses.crud.spec.js
+const request = require("request");
+const chai = require("chai");
+const expect = chai.expect;
+const Test = require("./test.config.js");
+const { sequelize } = require("../database/instance.js");
+
+const uri = "http://localhost:3000";
+const req = request.defaults({
+  json: true,
+  uri,
+});
+
+describe("SurveyResponses endpoints", () => {
+  before(async () => {
+    // Reset the database before running these tests
+    await Test.resetDb();
+    return Promise.resolve();
+  });
+
+  it("GET /survey-responses should read all survey responses", async () => {
+    // Perform a GET request to /survey-responses
+    const payload = {
+      uri: `${uri}/survey-responses`,
+    };
+    const { res, body } = await new Promise((resolve) => {
+      req.get(payload, (err, res, body) => resolve({ res, body }));
+    });
+
+    // Check that the server returns a 200 status code
+    expect(res.statusCode).to.equal(200);
+
+    // Check that the body has a surveyResponse array
+    expect(body.surveyResponses).to.exist;
+
+    // Check that the surveyResponses array has 3 survey responses in it
+    expect(body.surveyResponses.length).to.equal(3);
+
+    // Check that the surveyResponses have the correct structure
+    const surveyResponse = body.surveyResponses[0];
+    expect(surveyResponse.data).to.exist;
+    return Promise.resolve();
+  });
+});
+```
+
+We've intentionally written this test to fail; it is checking that there will be 3 survey responses, but we don't have any survey responses recorded yet.
+
+When we run the test suite with
+
+```
+npm run test-backend:watch
+```
+
+![Test suite fails](https://res.cloudinary.com/component/image/upload/v1603755834/permanent/survey-tutorial-test-0.png)
+
+This is good because it means our test is working. There are not 3 survey responses, so the test should fail.
+
+We can get the test passing by creating 3 survey responses in the `before` block of the test:
+
+```js
+// api/test/survey-responses.crud.spec.js
+// Updated before block:
+before(async () => {
+  // Reset the database before running these tests
+  await Test.resetDb();
+
+  // Create 3 surveyResponses
+  await sequelize.models.SurveyResponse.create({
+    userId: 1,
+    data: { technology: ["JS", "React"] },
+  });
+  await sequelize.models.SurveyResponse.create({
+    userId: 2,
+    data: { technology: ["Java", "Spring", "VS Code"] },
+  });
+  await sequelize.models.SurveyResponse.create({
+    userId: 3,
+    data: { technology: ["MySql"] },
+  });
+  return Promise.resolve();
+});
+```
+
+Now our test passes because 3 survey responses are returned.
+
+We can also verify that the `survey_test` database has those 3 survey responses as rows by using a tool like `Postico` (or any other postgres tool).
+
+![](https://res.cloudinary.com/component/image/upload/v1603756491/permanent/survey-tutorial-db-0.png)
+
+Visiting `http://localhost:5000/survey-responses` will still show no survey responses because when we run `nodemon server.js`, the application connects to the development database, not the test database.
+
+### Create a survey response
+
+We need our API to receive survey data from the frontend and save it in the database.
+
+We'll do this with
+
+`POST /survey-responses`
+
+And our data will be in the payload.
+
+We can start by adding a failing test:
+
+```js
+// Added to api/test/survey-responses.crud.spec.js
+
+it("POST /survey-responses should create a survey response", async () => {
+  // Perform a POST request to /survey-responses
+  const payload = {
+    uri: `${uri}/survey-responses`,
+    body: {
+      data: {
+        favoriteColor: "green",
+        technology: ["Vue", "Node.js"],
+      },
+    },
+  };
+  const { res, body } = await new Promise((resolve) => {
+    req.post(payload, (err, res, body) => resolve({ res, body }));
+  });
+
+  // Check that the server returns a 200 status code
+  expect(res.statusCode).to.equal(200);
+
+  // Check that the survey response is returned
+  expect(body.id).to.exist;
+  expect(body.data).to.deep.equal(payload.body.data);
+
+  // Check that a survey response was created in the database
+  const surveyResponse = await sequelize.models.SurveyResponse.findOne({
+    where: { id: body.id },
+  });
+  expect(surveyResponse).to.exist;
+  expect(surveyResponse.userId).to.equal(1);
+  expect(surveyResponse.data).to.deep.equal(payload.body.data);
+
+  return Promise.resolve();
+});
+```
+
+This test initially fails with a `404` instead of returning a `200` status code here:
+
+```js
+expect(res.statusCode).to.equal(200);
+```
+
+because we haven't implemented our API endpoint yet.
+
+We can "fix" this by adding the route:
+
+```js
+// Added to server.js, immediately after app.get("/survey-responses", ...)
+app.post("/survey-responses", async (req, res) => {
+  return res.send("Hello");
+});
+```
+
+Now the test passes our `res.statusCode` check but fails on the next assertions because nothing is actually created.
+
+```js
+// Check that the survey response is returned
+expect(body.id).to.exist;
+expect(body.data).to.deep.equal(payload.body.data);
+```
+
+We can fix these by updating the route to actually create a `surveyResponse` record and return it:
+
+```js
+// Update the app.post block in server.js
+app.post("/survey-responses", async (req, res) => {
+  const surveyResponse = await sequelize.models.SurveyResponse.create({
+    userId: 1,
+    data: req.body.data,
+  });
+  return res.send(surveyResponse);
+});
+```
+
+Now our tests are passing because the route creates a `surveyResponse` record and then sends it back to the requestor.
+
+## Save a survey response from the frontend
+
+Our backend is set up to receive and save a survey response when we `POST` to `/survey-responses`, so we can make our frontend do that.
+
+```
+npm install axios --save-dev
+```
+
+```js
+// src/App.js
+// Add axios and use it to send the data upon survey completion
+import * as Survey from "survey-react";
+import "survey-react/modern.css";
+import questions from "./questions.js";
+import axios from "axios";
+
+Survey.StylesManager.applyTheme("modern");
+const survey = new Survey.Model(questions);
+survey.onComplete.add(function (result) {
+  axios.post("http://localhost:5000/survey-responses", {
+    data: result.data,
+  });
+});
+
+function App() {
+  return (
+    <div className="App">
+      <Survey.Survey model={survey} />
+    </div>
+  );
+}
+
+export default App;
+```
+
+Now when we submit a survey, it is saved to the database.
