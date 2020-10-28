@@ -720,15 +720,16 @@ npm install axios --save-dev
 
 ```js
 // src/App.js
-// Add axios and use it to send the data upon survey completion
+// Add axios and use it to send the data with survey.onComplete
+import axios from "axios";
 import * as Survey from "survey-react";
 import "survey-react/modern.css";
 import questions from "./questions.js";
-import axios from "axios";
 
 Survey.StylesManager.applyTheme("modern");
 const survey = new Survey.Model(questions);
-survey.onComplete.add(function (result) {
+
+survey.onComplete.add((result) => {
   axios.post("http://localhost:5000/survey-responses", {
     data: result.data,
   });
@@ -745,4 +746,22 @@ function App() {
 export default App;
 ```
 
-Now when we submit a survey, it is saved to the database.
+Now when we submit a survey response from the frontend, it is saved to the database on the backend.
+
+### React router
+
+```
+npm i react-router-dom --save
+```
+
+### Bootstrap nav
+
+```html
+<!-- Add in the <head> of public/index.html -->
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+  integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2"
+  crossorigin="anonymous"
+/>
+```
