@@ -6,6 +6,12 @@ import questions from "./questions.js";
 import React from "react";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 
+import Toolkit from "@userfront/react";
+const Login = Toolkit.signupForm({
+  toolId: "mnbrak",
+  tenantId: "5xbpy4nz",
+});
+
 Survey.StylesManager.applyTheme("modern");
 const survey = new Survey.Model(questions);
 
@@ -68,22 +74,6 @@ export default App;
 
 function Landing() {
   return <h2>Landing</h2>;
-}
-
-class Login extends React.Component {
-  componentDidMount() {
-    window.Userfront.ready(() => {
-      window.Userfront.render();
-    });
-  }
-  render() {
-    // Signup form
-    return (
-      <div>
-        <div id="userfront-mnbrak"></div>
-      </div>
-    );
-  }
 }
 
 function Responses() {

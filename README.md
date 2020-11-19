@@ -765,3 +765,19 @@ npm i react-router-dom --save
   crossorigin="anonymous"
 />
 ```
+
+## Login
+
+Create an account at https://userfront.com
+
+```
+npm i @userfront/react --save
+```
+
+```js
+import Toolkit from "@userfront/react";
+const Login = Toolkit.build({
+  toolId: "mnbrak",
+  tenantId: "5xbpy4nz",
+});
+```
