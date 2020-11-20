@@ -766,7 +766,7 @@ npm i react-router-dom --save
 />
 ```
 
-## Login
+## Login & Signup
 
 Create an account at https://userfront.com
 
@@ -777,7 +777,22 @@ npm i @userfront/react --save
 ```js
 import Toolkit from "@userfront/react";
 const Login = Toolkit.build({
+  toolId: "nadrrd",
+  tenantId: "5xbpy4nz",
+});
+```
+
+```js
+const Signup = Toolkit.build({
   toolId: "mnbrak",
   tenantId: "5xbpy4nz",
 });
 ```
+
+### Change the redirection route to /survey
+
+In test mode, visit project settings and update "Login path" redirect
+
+## Send the token with the survey submission
+
+`npm install --save-dev js-cookie`

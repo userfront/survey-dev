@@ -22,38 +22,38 @@ const questions = {
         },
       ],
     },
-    {
-      name: "page2",
-      questions: [
-        {
-          type: "radiogroup",
-          choices: ["Yes", "No"],
-          isRequired: true,
-          name: "mvvmUsing",
-          title: "Do you use any MVVM framework?",
-        },
-        {
-          type: "checkbox",
-          choices: ["AngularJS", "KnockoutJS", "React"],
-          hasOther: true,
-          isRequired: true,
-          name: "mvvm",
-          title: "What MVVM framework do you use?",
-          visibleIf: "{mvvmUsing} = 'Yes'",
-        },
-      ],
-    },
-    {
-      name: "page3",
-      questions: [
-        {
-          type: "comment",
-          name: "about",
-          title:
-            "Please tell us about your main requirements for Survey library",
-        },
-      ],
-    },
+    // {
+    //   name: "page2",
+    //   questions: [
+    //     {
+    //       type: "radiogroup",
+    //       choices: ["Yes", "No"],
+    //       isRequired: true,
+    //       name: "mvvmUsing",
+    //       title: "Do you use any MVVM framework?",
+    //     },
+    //     {
+    //       type: "checkbox",
+    //       choices: ["AngularJS", "KnockoutJS", "React"],
+    //       hasOther: true,
+    //       isRequired: true,
+    //       name: "mvvm",
+    //       title: "What MVVM framework do you use?",
+    //       visibleIf: "{mvvmUsing} = 'Yes'",
+    //     },
+    //   ],
+    // },
+    // {
+    //   name: "page3",
+    //   questions: [
+    //     {
+    //       type: "comment",
+    //       name: "about",
+    //       title:
+    //         "Please tell us about your main requirements for Survey library",
+    //     },
+    //   ],
+    // },
   ],
 };
 

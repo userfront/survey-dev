@@ -1,14 +1,24 @@
 import axios from "axios";
+import Cookie from "js-cookie";
 import * as Survey from "survey-react";
 import "survey-react/modern.css";
 import questions from "./questions.js";
 
 import React from "react";
-import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  NavLink,
+} from "react-router-dom";
 
 import Toolkit from "@userfront/react";
-const Login = Toolkit.signupForm({
+const Signup = Toolkit.signupForm({
   toolId: "mnbrak",
+  tenantId: "5xbpy4nz",
+});
+const Login = Toolkit.signupForm({
+  toolId: "nadrrd",
   tenantId: "5xbpy4nz",
 });
 
@@ -16,9 +26,20 @@ Survey.StylesManager.applyTheme("modern");
 const survey = new Survey.Model(questions);
 
 survey.onComplete.add(function (result) {
-  axios.post("http://localhost:5000/survey-responses", {
-    data: result.data,
-  });
+  axios.post(
+    "http://localhost:5000/survey-responses",
+    {
+      data: result.data,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${Cookie.get("access.5xbpy4nz")}`,
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      },
+      withCredentials: true,
+    }
+  );
 });
 
 function App() {
@@ -26,25 +47,30 @@ function App() {
     <Router>
       <div>
         <nav className="navbar navbar-expand-lg navbar-light">
-          <Link to="/" className="navbar-brand">
+          <NavLink to="/" className="navbar-brand">
             Survey.dev
-          </Link>
+          </NavLink>
 
           <ul className="navbar-nav mr-auto">
             <li className="nav-item">
-              <Link to="/login" className="nav-link">
+              <NavLink to="/login" className="nav-link">
                 Login
-              </Link>
+              </NavLink>
             </li>
             <li className="nav-item">
-              <Link to="/survey" className="nav-link">
+              <NavLink to="/signup" className="nav-link">
+                Signup
+              </NavLink>
+            </li>
+            <li className="nav-item">
+              <NavLink to="/survey" className="nav-link">
                 Survey
-              </Link>
+              </NavLink>
             </li>
             <li className="nav-item">
-              <Link to="/survey-responses" className="nav-link">
+              <NavLink to="/survey-responses" className="nav-link">
                 Responses
-              </Link>
+              </NavLink>
             </li>
           </ul>
         </nav>
@@ -60,6 +86,9 @@ function App() {
           </Route>
           <Route path="/login">
             <Login />
+          </Route>
+          <Route path="/signup">
+            <Signup />
           </Route>
           <Route path="/">
             <Landing />
