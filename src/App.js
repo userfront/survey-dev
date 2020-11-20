@@ -34,10 +34,7 @@ survey.onComplete.add(function (result) {
     {
       headers: {
         Authorization: `Bearer ${Cookie.get("access.5xbpy4nz")}`,
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
       },
-      withCredentials: true,
     }
   );
 });

@@ -795,4 +795,203 @@ In test mode, visit project settings and update "Login path" redirect
 
 ## Send the token with the survey submission
 
+We'll send the access token when we submit a survey response, which will allow the API to know what user is making the request. We'll use a bearer token in the request header, which will look like:
+
+`Authorization: Bearer eyJhbGciOiJ...`
+
+### Set up the backend
+
+We need to set the backend to accept the `Authorization` header.
+
+Update the `Access-Control-Allow-Headers` setting in `server.js` to allow the `Authorization` header.
+
+```js
+// server.js
+res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+```
+
+### Send the token with request
+
+We need to read the access token from the cookies, then attach it to our request.
+
 `npm install --save-dev js-cookie`
+
+```js
+// App.js
+// Import the Cookie library
+import Cookie from "js-cookie";
+
+// Update our post method to include the header
+axios.post(
+  "http://localhost:5000/survey-responses",
+  {
+    data: result.data,
+  },
+  {
+    headers: {
+      Authorization: `Bearer ${Cookie.get("access.5xbpy4nz")}`,
+    },
+  }
+);
+```
+
+## Verify the Authorization token
+
+Now that the client sends an Authorization JWT, we need to verify and decode it on the backend.
+
+`npm install --save jsonwebtoken`
+
+`npm run test-backend:watch`
+
+In order to write tests, we need to create JWTs, which we will sign with an RSA key. For that, we need a key pair: private key used for signing the JWT and a public key used to verify it.
+
+```
+-----BEGIN RSA PRIVATE KEY-----
+MIICXgIBAAKBgQDMb8XUyMG7SkLKImwog14vQKFVZ5/PPTrFOffcmSxj3VKn6N0C
+OfLfA/e6Yy4VgXPYrRAHMEFwDieuZkoS+wuRztOYIoAmS7F8wft1WRHJo56OqDtc
+WyCcttWMB0Ol7QrWM/z69+hmRUJJg2IU33tcLOPk/UonF7GA4iarEPQeBQIDAQAB
+AoGBAKemQaXtvHHKxFrfP7M5h9NYPPW8tOFOZRO4JftR4YVDyrTH0fYxb2pT5qOD
+EhewwT+/LJW4jPFHqmLqn3RRS3oemUruclOhnb19ykGPr+xbLFaPOrZkn8zIxUJU
+g7o4InUno9wpz/opCXr0juZOLshxTWsCnfchEmSbdnhEvYYBAkEA+Evni9hrAf4m
+W7/ifJNWezDE6jAi5FMQ8IQOhEPBiTf42fspZ8GoaF1UzBT0hycOapADdMR9D824
+eWBsaEOWuQJBANLHgtLgbJ38WpzDsYcgzX5unj7qC4K9J0jwHPqzm9rO6ht4KNaX
+Np4nUY2Q0/5MHgybifbWBcvJ1+QI1liP260CQQDDtsD6wEoIthXyOBwEafa+/8AX
+gH3gT4GIs+7lXqsMyCvFVm5atJFUQkz22IWuiqCYao/u2HpjnJqOQezxemUxAkAp
+vwIWKgTZNYXszoV2sfSBOf91jn1BI52IQKY8sR4JNDoBvsa32bMjl737P9f84a6B
+6LxmevUi65MqwuVRHQzxAkEA4oY1Tez0dOBnwAvlO/f7by6CroSBl3ITvGFc3Vh6
+++EpdjO7hf0lJC0/21rIMxp94J9b0l+y04Fl4p+aGfsUhA==
+-----END RSA PRIVATE KEY-----
+
+-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDMb8XUyMG7SkLKImwog14vQKFV
+Z5/PPTrFOffcmSxj3VKn6N0COfLfA/e6Yy4VgXPYrRAHMEFwDieuZkoS+wuRztOY
+IoAmS7F8wft1WRHJo56OqDtcWyCcttWMB0Ol7QrWM/z69+hmRUJJg2IU33tcLOPk
+/UonF7GA4iarEPQeBQIDAQAB
+-----END PUBLIC KEY-----
+```
+
+```js
+// api/test/test.config.js
+Test.rsaPrivateKey = `-----BEGIN RSA PRIVATE KEY-----
+MIICXgIBAAKBgQDMb8XUyMG7SkLKImwog14vQKFVZ5/PPTrFOffcmSxj3VKn6N0C
+OfLfA/e6Yy4VgXPYrRAHMEFwDieuZkoS+wuRztOYIoAmS7F8wft1WRHJo56OqDtc
+WyCcttWMB0Ol7QrWM/z69+hmRUJJg2IU33tcLOPk/UonF7GA4iarEPQeBQIDAQAB
+AoGBAKemQaXtvHHKxFrfP7M5h9NYPPW8tOFOZRO4JftR4YVDyrTH0fYxb2pT5qOD
+EhewwT+/LJW4jPFHqmLqn3RRS3oemUruclOhnb19ykGPr+xbLFaPOrZkn8zIxUJU
+g7o4InUno9wpz/opCXr0juZOLshxTWsCnfchEmSbdnhEvYYBAkEA+Evni9hrAf4m
+W7/ifJNWezDE6jAi5FMQ8IQOhEPBiTf42fspZ8GoaF1UzBT0hycOapADdMR9D824
+eWBsaEOWuQJBANLHgtLgbJ38WpzDsYcgzX5unj7qC4K9J0jwHPqzm9rO6ht4KNaX
+Np4nUY2Q0/5MHgybifbWBcvJ1+QI1liP260CQQDDtsD6wEoIthXyOBwEafa+/8AX
+gH3gT4GIs+7lXqsMyCvFVm5atJFUQkz22IWuiqCYao/u2HpjnJqOQezxemUxAkAp
+vwIWKgTZNYXszoV2sfSBOf91jn1BI52IQKY8sR4JNDoBvsa32bMjl737P9f84a6B
+6LxmevUi65MqwuVRHQzxAkEA4oY1Tez0dOBnwAvlO/f7by6CroSBl3ITvGFc3Vh6
+++EpdjO7hf0lJC0/21rIMxp94J9b0l+y04Fl4p+aGfsUhA==
+-----END RSA PRIVATE KEY-----`;
+
+Test.rsaPublicKey = `-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDMb8XUyMG7SkLKImwog14vQKFV
+Z5/PPTrFOffcmSxj3VKn6N0COfLfA/e6Yy4VgXPYrRAHMEFwDieuZkoS+wuRztOY
+IoAmS7F8wft1WRHJo56OqDtcWyCcttWMB0Ol7QrWM/z69+hmRUJJg2IU33tcLOPk
+/UonF7GA4iarEPQeBQIDAQAB
+-----END PUBLIC KEY-----`;
+```
+
+Now we can update our test for `POST /survey-responses`.
+
+We create a `token`, which is a signed JWT, and then include it in the test request's header as `authorization: Bearer ${token}`.
+
+Then we assert that the `userId` of the created survey response should equal `88`, which is the `userId` from the token.
+
+```js
+// api/test/surveyResponses.crud.spec.js
+it("POST /survey-responses should create a survey response", async () => {
+  // Create a JWT and sign it with the RSA private key
+  const token = jwt.sign(
+    {
+      userId: 88,
+    },
+    Test.rsaPrivateKey,
+    { algorithm: "RS256" }
+  );
+
+  // Perform a POST request to /survey-responses
+  const payload = {
+    uri: `${uri}/survey-responses`,
+    body: {
+      data: {
+        favoriteColor: "green",
+        technology: ["Vue", "Node.js"],
+      },
+    },
+    headers: {
+      authorization: `Bearer ${token}`,
+    },
+  };
+
+  const { res, body } = await new Promise((resolve) => {
+    req.post(payload, (err, res, body) => resolve({ res, body }));
+  });
+
+  // Check that the server returns a 200 status code
+  expect(res.statusCode).to.equal(200);
+
+  // Check that the surveyResponse is returned
+  expect(body.id).to.exist;
+  expect(body.userId).to.equal(88);
+  expect(body.data).to.deep.equal(payload.body.data);
+
+  // Check that a surveyResponse was created in the database
+  const surveyResponse = await sequelize.models.SurveyResponse.findOne({
+    where: { id: body.id },
+  });
+  expect(surveyResponse).to.exist;
+  expect(surveyResponse.userId).to.equal(88);
+  expect(surveyResponse.data).to.deep.equal(payload.body.data);
+
+  return Promise.resolve();
+});
+```
+
+This test should be failing now, because the model isn't saving the `userId` from the token yet:
+
+![Failing test](https://res.cloudinary.com/component/image/upload/v1605899038/permanent/failing-test-1.png)
+
+### Save the token's userId with the survey response
+
+We can get the test passing by updating the route to verify the JWT and include it when saving the survey response:
+
+```js
+// server.js
+const jwt = require("jsonwebtoken");
+const rsaPublicKey = `-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDMb8XUyMG7SkLKImwog14vQKFV
+Z5/PPTrFOffcmSxj3VKn6N0COfLfA/e6Yy4VgXPYrRAHMEFwDieuZkoS+wuRztOY
+IoAmS7F8wft1WRHJo56OqDtcWyCcttWMB0Ol7QrWM/z69+hmRUJJg2IU33tcLOPk
+/UonF7GA4iarEPQeBQIDAQAB
+-----END PUBLIC KEY-----`;
+
+...
+
+app.post("/survey-responses", async (req, res) => {
+  // Get the JWT from the header named "authorization"
+  const token = req.headers.authorization.replace("Bearer ", "");
+
+  // Verify the token using the RSA public key
+  const verified = jwt.verify(token, rsaPublicKey, { algorithms: ["RS256"] });
+
+  // Use the userId from the token when creating the database record
+  const surveyResponse = await sequelize.models.SurveyResponse.create({
+    userId: verified.userId,
+    data: req.body.data,
+  });
+  return res.send(surveyResponse);
+});
+```
+
+### Handle cases where the JWT is incorrect or missing
+
+In order to build a secure system, we want to make sure that we don't permit access to unauthorized users. We can write tests to assert the following:
+
+- Should return 401 error when JWT is expired
+- Should return 401 error when JWT is signed with a different key
+- Should return 401 error when authorization header is missing

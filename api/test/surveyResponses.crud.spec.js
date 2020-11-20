@@ -1,6 +1,7 @@
 const request = require("request");
 const chai = require("chai");
 const expect = chai.expect;
+const jwt = require("jsonwebtoken");
 const Test = require("./test.config.js");
 const { sequelize } = require("../database/instance.js");
 
@@ -10,7 +11,7 @@ const req = request.defaults({
   uri,
 });
 
-describe("SurveyResponses endpoint", () => {
+describe.only("SurveyResponses endpoint", () => {
   before(async () => {
     // Reset the database before running these tests
     await Test.resetDb();
@@ -56,6 +57,15 @@ describe("SurveyResponses endpoint", () => {
   });
 
   it("POST /survey-responses should create a survey response", async () => {
+    // Create a JWT and sign it with the RSA private key
+    const token = jwt.sign(
+      {
+        userId: 88,
+      },
+      Test.rsaPrivateKey,
+      { algorithm: "RS256" }
+    );
+
     // Perform a POST request to /survey-responses
     const payload = {
       uri: `${uri}/survey-responses`,
@@ -65,7 +75,11 @@ describe("SurveyResponses endpoint", () => {
           technology: ["Vue", "Node.js"],
         },
       },
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
     };
+
     const { res, body } = await new Promise((resolve) => {
       req.post(payload, (err, res, body) => resolve({ res, body }));
     });
@@ -75,6 +89,7 @@ describe("SurveyResponses endpoint", () => {
 
     // Check that the surveyResponse is returned
     expect(body.id).to.exist;
+    expect(body.userId).to.equal(88);
     expect(body.data).to.deep.equal(payload.body.data);
 
     // Check that a surveyResponse was created in the database
@@ -82,7 +97,7 @@ describe("SurveyResponses endpoint", () => {
       where: { id: body.id },
     });
     expect(surveyResponse).to.exist;
-    expect(surveyResponse.userId).to.equal(1);
+    expect(surveyResponse.userId).to.equal(88);
     expect(surveyResponse.data).to.deep.equal(payload.body.data);
 
     return Promise.resolve();
