@@ -637,7 +637,6 @@ We can start by adding a failing test:
 // Added to api/test/survey-responses.crud.spec.js
 
 it("POST /survey-responses should create a survey response", async () => {
-  // Perform a POST request to /survey-responses
   const payload = {
     uri: `${uri}/survey-responses`,
     body: {
@@ -647,6 +646,8 @@ it("POST /survey-responses should create a survey response", async () => {
       },
     },
   };
+
+  // Perform a POST request to /survey-responses
   const { res, body } = await new Promise((resolve) => {
     req.post(payload, (err, res, body) => resolve({ res, body }));
   });
@@ -847,52 +848,39 @@ In order to write tests, we need to create JWTs, which we will sign with an RSA 
 
 ```
 -----BEGIN RSA PRIVATE KEY-----
-MIICXgIBAAKBgQDMb8XUyMG7SkLKImwog14vQKFVZ5/PPTrFOffcmSxj3VKn6N0C
-OfLfA/e6Yy4VgXPYrRAHMEFwDieuZkoS+wuRztOYIoAmS7F8wft1WRHJo56OqDtc
-WyCcttWMB0Ol7QrWM/z69+hmRUJJg2IU33tcLOPk/UonF7GA4iarEPQeBQIDAQAB
-AoGBAKemQaXtvHHKxFrfP7M5h9NYPPW8tOFOZRO4JftR4YVDyrTH0fYxb2pT5qOD
-EhewwT+/LJW4jPFHqmLqn3RRS3oemUruclOhnb19ykGPr+xbLFaPOrZkn8zIxUJU
-g7o4InUno9wpz/opCXr0juZOLshxTWsCnfchEmSbdnhEvYYBAkEA+Evni9hrAf4m
-W7/ifJNWezDE6jAi5FMQ8IQOhEPBiTf42fspZ8GoaF1UzBT0hycOapADdMR9D824
-eWBsaEOWuQJBANLHgtLgbJ38WpzDsYcgzX5unj7qC4K9J0jwHPqzm9rO6ht4KNaX
-Np4nUY2Q0/5MHgybifbWBcvJ1+QI1liP260CQQDDtsD6wEoIthXyOBwEafa+/8AX
-gH3gT4GIs+7lXqsMyCvFVm5atJFUQkz22IWuiqCYao/u2HpjnJqOQezxemUxAkAp
-vwIWKgTZNYXszoV2sfSBOf91jn1BI52IQKY8sR4JNDoBvsa32bMjl737P9f84a6B
-6LxmevUi65MqwuVRHQzxAkEA4oY1Tez0dOBnwAvlO/f7by6CroSBl3ITvGFc3Vh6
-++EpdjO7hf0lJC0/21rIMxp94J9b0l+y04Fl4p+aGfsUhA==
+MIIBOwIBAAJBAJ8PxdNGVwO0Wl4irLuYyrYvNCHMO2ZcTb8cVka/B0xrWTAX/G+7
+l1fA7aEWX7/OJsAXkD4aEp3e/d3rNFH/KacCAwEAAQJBAJy/B1zPeVpONauEkiIA
+TOtCEyanQ3X4yijlvOPUxlV3+awUq+f8/spS8lCeBtGLYPXdfaib1CvcDpvuZ8nV
+mmECIQDWOxh1/d3YkKWUPHML0k88tdSHYKZNrOL2NBL/zWb5FwIhAL4TA+zWYQSv
+BfUeyvoXfxIeNtwEZkTnqRdxmdCKK43xAiEAi4fv9aHEpXIItlTs5a0z+KnBY+86
+Qesx5AOkwEFLKT8CICbX2fh/gwoi/nOuXEqpnJVGSW3DFGdGdF7PH2Dnq6jxAiBv
+x/s4QxfQhYvhPMXisV1PYQ0O2VMMBe4PO7Ioi4xMqQ==
 -----END RSA PRIVATE KEY-----
 
 -----BEGIN PUBLIC KEY-----
-MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDMb8XUyMG7SkLKImwog14vQKFV
-Z5/PPTrFOffcmSxj3VKn6N0COfLfA/e6Yy4VgXPYrRAHMEFwDieuZkoS+wuRztOY
-IoAmS7F8wft1WRHJo56OqDtcWyCcttWMB0Ol7QrWM/z69+hmRUJJg2IU33tcLOPk
-/UonF7GA4iarEPQeBQIDAQAB
+MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJ8PxdNGVwO0Wl4irLuYyrYvNCHMO2Zc
+Tb8cVka/B0xrWTAX/G+7l1fA7aEWX7/OJsAXkD4aEp3e/d3rNFH/KacCAwEAAQ==
 -----END PUBLIC KEY-----
 ```
 
 ```js
 // api/test/test.config.js
 Test.rsaPrivateKey = `-----BEGIN RSA PRIVATE KEY-----
-MIICXgIBAAKBgQDMb8XUyMG7SkLKImwog14vQKFVZ5/PPTrFOffcmSxj3VKn6N0C
-OfLfA/e6Yy4VgXPYrRAHMEFwDieuZkoS+wuRztOYIoAmS7F8wft1WRHJo56OqDtc
-WyCcttWMB0Ol7QrWM/z69+hmRUJJg2IU33tcLOPk/UonF7GA4iarEPQeBQIDAQAB
-AoGBAKemQaXtvHHKxFrfP7M5h9NYPPW8tOFOZRO4JftR4YVDyrTH0fYxb2pT5qOD
-EhewwT+/LJW4jPFHqmLqn3RRS3oemUruclOhnb19ykGPr+xbLFaPOrZkn8zIxUJU
-g7o4InUno9wpz/opCXr0juZOLshxTWsCnfchEmSbdnhEvYYBAkEA+Evni9hrAf4m
-W7/ifJNWezDE6jAi5FMQ8IQOhEPBiTf42fspZ8GoaF1UzBT0hycOapADdMR9D824
-eWBsaEOWuQJBANLHgtLgbJ38WpzDsYcgzX5unj7qC4K9J0jwHPqzm9rO6ht4KNaX
-Np4nUY2Q0/5MHgybifbWBcvJ1+QI1liP260CQQDDtsD6wEoIthXyOBwEafa+/8AX
-gH3gT4GIs+7lXqsMyCvFVm5atJFUQkz22IWuiqCYao/u2HpjnJqOQezxemUxAkAp
-vwIWKgTZNYXszoV2sfSBOf91jn1BI52IQKY8sR4JNDoBvsa32bMjl737P9f84a6B
-6LxmevUi65MqwuVRHQzxAkEA4oY1Tez0dOBnwAvlO/f7by6CroSBl3ITvGFc3Vh6
-++EpdjO7hf0lJC0/21rIMxp94J9b0l+y04Fl4p+aGfsUhA==
+MIIBOwIBAAJBAJ8PxdNGVwO0Wl4irLuYyrYvNCHMO2ZcTb8cVka/B0xrWTAX/G+7
+l1fA7aEWX7/OJsAXkD4aEp3e/d3rNFH/KacCAwEAAQJBAJy/B1zPeVpONauEkiIA
+TOtCEyanQ3X4yijlvOPUxlV3+awUq+f8/spS8lCeBtGLYPXdfaib1CvcDpvuZ8nV
+mmECIQDWOxh1/d3YkKWUPHML0k88tdSHYKZNrOL2NBL/zWb5FwIhAL4TA+zWYQSv
+BfUeyvoXfxIeNtwEZkTnqRdxmdCKK43xAiEAi4fv9aHEpXIItlTs5a0z+KnBY+86
+Qesx5AOkwEFLKT8CICbX2fh/gwoi/nOuXEqpnJVGSW3DFGdGdF7PH2Dnq6jxAiBv
+x/s4QxfQhYvhPMXisV1PYQ0O2VMMBe4PO7Ioi4xMqQ==
 -----END RSA PRIVATE KEY-----`;
+```
 
-Test.rsaPublicKey = `-----BEGIN PUBLIC KEY-----
-MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDMb8XUyMG7SkLKImwog14vQKFV
-Z5/PPTrFOffcmSxj3VKn6N0COfLfA/e6Yy4VgXPYrRAHMEFwDieuZkoS+wuRztOY
-IoAmS7F8wft1WRHJo56OqDtcWyCcttWMB0Ol7QrWM/z69+hmRUJJg2IU33tcLOPk
-/UonF7GA4iarEPQeBQIDAQAB
+```js
+// server.js
+const rsaPublicKey = `-----BEGIN PUBLIC KEY-----
+MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJ8PxdNGVwO0Wl4irLuYyrYvNCHMO2Zc
+Tb8cVka/B0xrWTAX/G+7l1fA7aEWX7/OJsAXkD4aEp3e/d3rNFH/KacCAwEAAQ==
 -----END PUBLIC KEY-----`;
 ```
 
@@ -914,7 +902,6 @@ it("POST /survey-responses should create a survey response", async () => {
     { algorithm: "RS256" }
   );
 
-  // Perform a POST request to /survey-responses
   const payload = {
     uri: `${uri}/survey-responses`,
     body: {
@@ -923,6 +910,8 @@ it("POST /survey-responses should create a survey response", async () => {
         technology: ["Vue", "Node.js"],
       },
     },
+
+    // Perform a POST request to /survey-responses
     headers: {
       authorization: `Bearer ${token}`,
     },
@@ -964,10 +953,8 @@ We can get the test passing by updating the route to verify the JWT and include 
 // server.js
 const jwt = require("jsonwebtoken");
 const rsaPublicKey = `-----BEGIN PUBLIC KEY-----
-MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDMb8XUyMG7SkLKImwog14vQKFV
-Z5/PPTrFOffcmSxj3VKn6N0COfLfA/e6Yy4VgXPYrRAHMEFwDieuZkoS+wuRztOY
-IoAmS7F8wft1WRHJo56OqDtcWyCcttWMB0Ol7QrWM/z69+hmRUJJg2IU33tcLOPk
-/UonF7GA4iarEPQeBQIDAQAB
+MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJ8PxdNGVwO0Wl4irLuYyrYvNCHMO2Zc
+Tb8cVka/B0xrWTAX/G+7l1fA7aEWX7/OJsAXkD4aEp3e/d3rNFH/KacCAwEAAQ==
 -----END PUBLIC KEY-----`;
 
 ...
@@ -977,7 +964,7 @@ app.post("/survey-responses", async (req, res) => {
   const token = req.headers.authorization.replace("Bearer ", "");
 
   // Verify the token using the RSA public key
-  const verified = jwt.verify(token, rsaPublicKey, { algorithms: ["RS256"] });
+  const verified = jwt.verify(token, rsaPublicKey, { algorithm: "RS256" });
 
   // Use the userId from the token when creating the database record
   const surveyResponse = await sequelize.models.SurveyResponse.create({
@@ -995,3 +982,140 @@ In order to build a secure system, we want to make sure that we don't permit acc
 - Should return 401 error when JWT is expired
 - Should return 401 error when JWT is signed with a different key
 - Should return 401 error when authorization header is missing
+
+#### Testing expired JWT
+
+```js
+// api/test/surveyResponses.crud.spec.js
+it("should return 401 if JWT is expired", async () => {
+  // Create an expired JWT signed with the RSA private key
+  const token = jwt.sign(
+    {
+      userId: 88,
+    },
+    Test.rsaPrivateKey,
+    {
+      algorithm: "RS256",
+      expiresIn: -1,
+    }
+  );
+
+  const payload = {
+    uri: `${uri}/survey-responses`,
+    body: {
+      data: {
+        someData: "Here",
+      },
+    },
+    headers: {
+      authorization: `Bearer ${token}`,
+    },
+  };
+
+  // Perform a POST request to /survey-responses
+  const { res, body } = await new Promise((resolve) => {
+    req.post(payload, (err, res, body) => resolve({ res, body }));
+  });
+
+  // Check that the server returns a 401 status code
+  expect(res.statusCode).to.equal(401);
+  expect(body).to.equal("Unauthorized");
+  return Promise.resolve();
+});
+```
+
+#### Testing invalid JWT (signed by a different private key)
+
+```js
+// api/test/surveyResponses.crud.spec.js
+it("should return 401 if JWT is signed with wrong key", async () => {
+  // Create a JWT signed with a different RSA private key
+  const token = jwt.sign(
+    {
+      userId: 88,
+    },
+    `-----BEGIN RSA PRIVATE KEY-----
+MIIBOwIBAAJBALHlFNfHdfCq4stiIZyTmkawfJXgGSXHHy9L2YmcDYoeoL/ljIXn
+PX4/d4AgABq6NTKJEoIm661Ay1VYjErpY4cCAwEAAQJBAJ2XS6yP1So7qCf2KcJ0
+e6INrIB1ArIVwMl8Txz5soDcfe8h3X6w7/GshWG//DcnTXsosMnYPbkhGord1nQP
+85kCIQDyW5SHAY0mSyYUjZpFrq/dEyDEGiq26DpT8C1w3DlBwwIhALvolEEU+dMt
+NMF7Bj8Y/8oi1BP/AlCs62TM9gLt8FbtAiEA5FW2BNBIXMi2cuzKaVZgqGeqGjgR
+AEyhD44cMdW6OCMCIF0n3metaHTi0mahAOXDFPw27ADFyXYJY+FjIwssvpu5AiAy
+j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
+-----END RSA PRIVATE KEY-----`,
+    {
+      algorithm: "RS256",
+    }
+  );
+
+  const payload = {
+    uri: `${uri}/survey-responses`,
+    body: {
+      data: {
+        someData: "Here",
+      },
+    },
+    headers: {
+      authorization: `Bearer ${token}`,
+    },
+  };
+
+  // Perform a POST request to /survey-responses
+  const { res, body } = await new Promise((resolve) => {
+    req.post(payload, (err, res, body) => resolve({ res, body }));
+  });
+
+  // Check that the server returns a 401 status code
+  expect(res.statusCode).to.equal(401);
+  expect(body).to.equal("Unauthorized");
+  return Promise.resolve();
+});
+```
+
+#### Testing with a missing authorization header
+
+```js
+// api/test/surveyResponses.crud.spec.js
+it("should return 401 if the authorization header is missing", async () => {
+  // Don't include the authorization header
+  const payload = {
+    uri: `${uri}/survey-responses`,
+    body: {
+      data: {
+        someData: "Here",
+      },
+    },
+  };
+
+  // Perform a POST request to /survey-responses
+  const { res, body } = await new Promise((resolve) => {
+    req.post(payload, (err, res, body) => resolve({ res, body }));
+  });
+
+  // Check that the server returns a 401 status code
+  expect(res.statusCode).to.equal(401);
+  expect(body).to.equal("Unauthorized");
+  return Promise.resolve();
+});
+```
+
+### Getting the tests to pass
+
+We can get these tests to pass by returning an `Unauthorized` error if the process fails:
+
+```js
+// server.js
+app.post("/survey-responses", async (req, res) => {
+  try {
+    const token = req.headers.authorization.replace("Bearer ", "");
+    const verified = jwt.verify(token, rsaPublicKey, { algorithm: "RS256" });
+    const surveyResponse = await sequelize.models.SurveyResponse.create({
+      userId: verified.userId,
+      data: req.body.data,
+    });
+    return res.send(surveyResponse);
+  } catch (err) {
+    return res.status(401).send("Unauthorized");
+  }
+});
+```

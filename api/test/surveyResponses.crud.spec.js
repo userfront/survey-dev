@@ -57,7 +57,7 @@ describe.only("SurveyResponses endpoint", () => {
   });
 
   it("POST /survey-responses should create a survey response", async () => {
-    // Create a JWT and sign it with the RSA private key
+    // Create a JWT signed with the RSA private key
     const token = jwt.sign(
       {
         userId: 88,
@@ -66,7 +66,6 @@ describe.only("SurveyResponses endpoint", () => {
       { algorithm: "RS256" }
     );
 
-    // Perform a POST request to /survey-responses
     const payload = {
       uri: `${uri}/survey-responses`,
       body: {
@@ -80,6 +79,7 @@ describe.only("SurveyResponses endpoint", () => {
       },
     };
 
+    // Perform a POST request to /survey-responses
     const { res, body } = await new Promise((resolve) => {
       req.post(payload, (err, res, body) => resolve({ res, body }));
     });
@@ -100,6 +100,106 @@ describe.only("SurveyResponses endpoint", () => {
     expect(surveyResponse.userId).to.equal(88);
     expect(surveyResponse.data).to.deep.equal(payload.body.data);
 
+    return Promise.resolve();
+  });
+
+  it("should return 401 if JWT is expired", async () => {
+    // Create an expired JWT signed with the RSA private key
+    const token = jwt.sign(
+      {
+        userId: 88,
+      },
+      Test.rsaPrivateKey,
+      {
+        algorithm: "RS256",
+        expiresIn: -1,
+      }
+    );
+
+    const payload = {
+      uri: `${uri}/survey-responses`,
+      body: {
+        data: {
+          someData: "Here",
+        },
+      },
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+    };
+
+    // Perform a POST request to /survey-responses
+    const { res, body } = await new Promise((resolve) => {
+      req.post(payload, (err, res, body) => resolve({ res, body }));
+    });
+
+    // Check that the server returns a 401 status code
+    expect(res.statusCode).to.equal(401);
+    expect(body).to.equal("Unauthorized");
+    return Promise.resolve();
+  });
+
+  it("should return 401 if JWT is signed with wrong key", async () => {
+    // Create a JWT signed with a different RSA private key
+    const token = jwt.sign(
+      {
+        userId: 88,
+      },
+      `-----BEGIN RSA PRIVATE KEY-----
+MIIBOwIBAAJBALHlFNfHdfCq4stiIZyTmkawfJXgGSXHHy9L2YmcDYoeoL/ljIXn
+PX4/d4AgABq6NTKJEoIm661Ay1VYjErpY4cCAwEAAQJBAJ2XS6yP1So7qCf2KcJ0
+e6INrIB1ArIVwMl8Txz5soDcfe8h3X6w7/GshWG//DcnTXsosMnYPbkhGord1nQP
+85kCIQDyW5SHAY0mSyYUjZpFrq/dEyDEGiq26DpT8C1w3DlBwwIhALvolEEU+dMt
+NMF7Bj8Y/8oi1BP/AlCs62TM9gLt8FbtAiEA5FW2BNBIXMi2cuzKaVZgqGeqGjgR
+AEyhD44cMdW6OCMCIF0n3metaHTi0mahAOXDFPw27ADFyXYJY+FjIwssvpu5AiAy
+j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
+-----END RSA PRIVATE KEY-----`,
+      {
+        algorithm: "RS256",
+      }
+    );
+
+    const payload = {
+      uri: `${uri}/survey-responses`,
+      body: {
+        data: {
+          someData: "Here",
+        },
+      },
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+    };
+
+    // Perform a POST request to /survey-responses
+    const { res, body } = await new Promise((resolve) => {
+      req.post(payload, (err, res, body) => resolve({ res, body }));
+    });
+
+    // Check that the server returns a 401 status code
+    expect(res.statusCode).to.equal(401);
+    expect(body).to.equal("Unauthorized");
+    return Promise.resolve();
+  });
+
+  it("should return 401 if the authorization header is missing", async () => {
+    const payload = {
+      uri: `${uri}/survey-responses`,
+      body: {
+        data: {
+          someData: "Here",
+        },
+      },
+    };
+
+    // Perform a POST request to /survey-responses
+    const { res, body } = await new Promise((resolve) => {
+      req.post(payload, (err, res, body) => resolve({ res, body }));
+    });
+
+    // Check that the server returns a 401 status code
+    expect(res.statusCode).to.equal(401);
+    expect(body).to.equal("Unauthorized");
     return Promise.resolve();
   });
 });

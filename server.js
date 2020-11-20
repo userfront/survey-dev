@@ -5,10 +5,8 @@ const app = express();
 const jwt = require("jsonwebtoken");
 
 const rsaPublicKey = `-----BEGIN PUBLIC KEY-----
-MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDMb8XUyMG7SkLKImwog14vQKFV
-Z5/PPTrFOffcmSxj3VKn6N0COfLfA/e6Yy4VgXPYrRAHMEFwDieuZkoS+wuRztOY
-IoAmS7F8wft1WRHJo56OqDtcWyCcttWMB0Ol7QrWM/z69+hmRUJJg2IU33tcLOPk
-/UonF7GA4iarEPQeBQIDAQAB
+MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJ8PxdNGVwO0Wl4irLuYyrYvNCHMO2Zc
+Tb8cVka/B0xrWTAX/G+7l1fA7aEWX7/OJsAXkD4aEp3e/d3rNFH/KacCAwEAAQ==
 -----END PUBLIC KEY-----`;
 
 app.use(express.static(path.join(__dirname, "build")));
@@ -29,13 +27,17 @@ app.get("/survey-responses", async (req, res) => {
 });
 
 app.post("/survey-responses", async (req, res) => {
-  const token = req.headers.authorization.replace("Bearer ", "");
-  const verified = jwt.verify(token, rsaPublicKey, { algorithms: ["RS256"] });
-  const surveyResponse = await sequelize.models.SurveyResponse.create({
-    userId: verified.userId,
-    data: req.body.data,
-  });
-  return res.send(surveyResponse);
+  try {
+    const token = req.headers.authorization.replace("Bearer ", "");
+    const verified = jwt.verify(token, rsaPublicKey, { algorithm: "RS256" });
+    const surveyResponse = await sequelize.models.SurveyResponse.create({
+      userId: verified.userId,
+      data: req.body.data,
+    });
+    return res.send(surveyResponse);
+  } catch (err) {
+    return res.status(401).send("Unauthorized");
+  }
 });
 
 app.get("/", async (req, res) => {
