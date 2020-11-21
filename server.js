@@ -18,8 +18,20 @@ app.all("/survey-responses", function (req, res, next) {
 });
 
 app.get("/survey-responses", async (req, res) => {
-  const surveyResponses = await sequelize.models.SurveyResponse.findAll();
-  return res.send({ surveyResponses });
+  try {
+    const token = req.headers.authorization.replace("Bearer ", "");
+    const verified = jwt.verify(token, process.env.RSA_PUBLIC_KEY, {
+      algorithm: "RS256",
+    });
+    const surveyResponses = await sequelize.models.SurveyResponse.findAll({
+      where: {
+        userId: verified.userId,
+      },
+    });
+    return res.send({ surveyResponses });
+  } catch (err) {
+    return res.status(401).send("Unauthorized");
+  }
 });
 
 app.post("/survey-responses", async (req, res) => {

@@ -965,7 +965,7 @@ In order to build a secure system, we want to make sure that we don't permit acc
 
 ```js
 // api/test/surveyResponses.crud.spec.js
-it("should return 401 if JWT is expired", async () => {
+it("POST /survey-responses should return 401 if JWT is expired", async () => {
   // Create an expired JWT signed with the RSA private key
   const token = jwt.sign(
     {
@@ -1006,7 +1006,7 @@ it("should return 401 if JWT is expired", async () => {
 
 ```js
 // api/test/surveyResponses.crud.spec.js
-it("should return 401 if JWT is signed with wrong key", async () => {
+it("POST /survey-responses should return 401 if JWT is signed with wrong key", async () => {
   // Create a JWT signed with a different RSA private key
   const token = jwt.sign(
     {
@@ -1138,3 +1138,168 @@ nodemon server.js
 ```
 
 Now submitting our survey when logged in should work.
+
+## Add the GET route
+
+Now instead of the `GET /survey-responses` route returning _all_ survey responses, we want it to only return the responses for the user that requests them.
+
+We will again use the access token to determine the `userId`, and then use that to look up the survey responses to return.
+
+### Tests
+
+- Should return only the correct survey response(s)
+- Should return 401 error when JWT is signed with a different key
+- Should return 401 error when authorization header is missing
+
+#### Testing a GET request
+
+We can update our existing test for the GET route to include a valid JWT, and then assert that the correct survey response is returned.
+
+```js
+// api/test/surveyResponses.crud.spec.js
+it("GET /survey-responses should return survey responses", async () => {
+  // Create a JWT signed with the RSA private key
+  const token = jwt.sign(
+    {
+      userId: 3,
+    },
+    Test.rsaPrivateKey,
+    { algorithm: "RS256" }
+  );
+
+  // Perform a GET request to /survey-responses
+  const payload = {
+    uri: `${uri}/survey-responses`,
+    headers: {
+      authorization: `Bearer ${token}`,
+    },
+  };
+  const { res, body } = await new Promise((resolve) => {
+    req.get(payload, (err, res, body) => resolve({ res, body }));
+  });
+
+  // Check that the server returns a 200 status code
+  expect(res.statusCode).to.equal(200);
+
+  // Check that the body has a surveyResponse array
+  expect(body.surveyResponses).to.exist;
+
+  // Check that the surveyResponse array has 1 surveyResponses in it
+  expect(body.surveyResponses.length).to.equal(1);
+
+  // Check that the surveyResponses have the correct structure
+  const surveyResponse = body.surveyResponses[0];
+  expect(surveyResponse.userId).to.equal(3);
+  expect(surveyResponse.data).to.exist;
+  return Promise.resolve();
+});
+```
+
+This test should fail, and we can get it passing by updating our code to read the incoming `Authorization` header, verifying the JWT, and then using the `userId` value to look up the survey responses:
+
+```js
+// server.js
+app.get("/survey-responses", async (req, res) => {
+  const token = req.headers.authorization.replace("Bearer ", "");
+  const verified = jwt.verify(token, process.env.RSA_PUBLIC_KEY, {
+    algorithm: "RS256",
+  });
+  const surveyResponses = await sequelize.models.SurveyResponse.findAll({
+    where: {
+      userId: verified.userId,
+    },
+  });
+  return res.send({ surveyResponses });
+});
+```
+
+#### Testing an invalid JWT
+
+Similar to the POST test, we can send a JWT with a valid `userId` but an invalid signature, and we should recieve a 401 Unauthorized error.
+
+```js
+// api/test/surveyResponses.crud.spec.js
+it("GET /survey-responses should return 401 if JWT is signed with wrong key", async () => {
+  // Create a JWT signed with a different RSA private key
+  const token = jwt.sign(
+    {
+      userId: 3,
+    },
+    `-----BEGIN RSA PRIVATE KEY-----
+MIIBOwIBAAJBALHlFNfHdfCq4stiIZyTmkawfJXgGSXHHy9L2YmcDYoeoL/ljIXn
+PX4/d4AgABq6NTKJEoIm661Ay1VYjErpY4cCAwEAAQJBAJ2XS6yP1So7qCf2KcJ0
+e6INrIB1ArIVwMl8Txz5soDcfe8h3X6w7/GshWG//DcnTXsosMnYPbkhGord1nQP
+85kCIQDyW5SHAY0mSyYUjZpFrq/dEyDEGiq26DpT8C1w3DlBwwIhALvolEEU+dMt
+NMF7Bj8Y/8oi1BP/AlCs62TM9gLt8FbtAiEA5FW2BNBIXMi2cuzKaVZgqGeqGjgR
+AEyhD44cMdW6OCMCIF0n3metaHTi0mahAOXDFPw27ADFyXYJY+FjIwssvpu5AiAy
+j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
+-----END RSA PRIVATE KEY-----`,
+    {
+      algorithm: "RS256",
+    }
+  );
+
+  const payload = {
+    uri: `${uri}/survey-responses`,
+    headers: {
+      authorization: `Bearer ${token}`,
+    },
+  };
+
+  // Perform a POST request to /survey-responses
+  const { res, body } = await new Promise((resolve) => {
+    req.get(payload, (err, res, body) => resolve({ res, body }));
+  });
+
+  // Check that the server returns a 401 status code
+  expect(res.statusCode).to.equal(401);
+  expect(body).to.equal("Unauthorized");
+  return Promise.resolve();
+});
+```
+
+To get this test passing, we can update our route to add a `try/catch` block to the GET route (like we did for the POST route):
+
+```js
+// server.js
+app.get("/survey-responses", async (req, res) => {
+  try {
+    const token = req.headers.authorization.replace("Bearer ", "");
+    const verified = jwt.verify(token, process.env.RSA_PUBLIC_KEY, {
+      algorithm: "RS256",
+    });
+    const surveyResponses = await sequelize.models.SurveyResponse.findAll({
+      where: {
+        userId: verified.userId,
+      },
+    });
+    return res.send({ surveyResponses });
+  } catch (err) {
+    return res.status(401).send("Unauthorized");
+  }
+});
+```
+
+#### Testing with no authorization header
+
+```js
+it("GET /survey-responses should return 401 if no authorization header is present", async () => {
+  const payload = {
+    uri: `${uri}/survey-responses`,
+  };
+
+  // Perform a POST request to /survey-responses
+  const { res, body } = await new Promise((resolve) => {
+    req.get(payload, (err, res, body) => resolve({ res, body }));
+  });
+
+  // Check that the server returns a 401 status code
+  expect(res.statusCode).to.equal(401);
+  expect(body).to.equal("Unauthorized");
+  return Promise.resolve();
+});
+```
+
+This test will already pass. It's a good practice to comment out the `try/catch` block we just added to `server.js` to check that this test will fail without the block. If it does fail without that block, then we know the test is working correctly.
+
+## Displaying responses in the browser

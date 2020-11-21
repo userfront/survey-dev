@@ -33,9 +33,21 @@ describe.only("SurveyResponses endpoint", () => {
   });
 
   it("GET /survey-responses should return survey responses", async () => {
+    // Create a JWT signed with the RSA private key
+    const token = jwt.sign(
+      {
+        userId: 3,
+      },
+      Test.rsaPrivateKey,
+      { algorithm: "RS256" }
+    );
+
     // Perform a GET request to /survey-responses
     const payload = {
       uri: `${uri}/survey-responses`,
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
     };
     const { res, body } = await new Promise((resolve) => {
       req.get(payload, (err, res, body) => resolve({ res, body }));
@@ -47,12 +59,67 @@ describe.only("SurveyResponses endpoint", () => {
     // Check that the body has a surveyResponse array
     expect(body.surveyResponses).to.exist;
 
-    // Check that the surveyResponse array has 3 surveyResponses in it
-    expect(body.surveyResponses.length).to.equal(3);
+    // Check that the surveyResponse array has 1 surveyResponses in it
+    expect(body.surveyResponses.length).to.equal(1);
 
     // Check that the surveyResponses have the correct structure
     const surveyResponse = body.surveyResponses[0];
+    expect(surveyResponse.userId).to.equal(3);
     expect(surveyResponse.data).to.exist;
+    return Promise.resolve();
+  });
+
+  it("GET /survey-responses should return 401 if JWT is signed with wrong key", async () => {
+    // Create a JWT signed with a different RSA private key
+    const token = jwt.sign(
+      {
+        userId: 3,
+      },
+      `-----BEGIN RSA PRIVATE KEY-----
+MIIBOwIBAAJBALHlFNfHdfCq4stiIZyTmkawfJXgGSXHHy9L2YmcDYoeoL/ljIXn
+PX4/d4AgABq6NTKJEoIm661Ay1VYjErpY4cCAwEAAQJBAJ2XS6yP1So7qCf2KcJ0
+e6INrIB1ArIVwMl8Txz5soDcfe8h3X6w7/GshWG//DcnTXsosMnYPbkhGord1nQP
+85kCIQDyW5SHAY0mSyYUjZpFrq/dEyDEGiq26DpT8C1w3DlBwwIhALvolEEU+dMt
+NMF7Bj8Y/8oi1BP/AlCs62TM9gLt8FbtAiEA5FW2BNBIXMi2cuzKaVZgqGeqGjgR
+AEyhD44cMdW6OCMCIF0n3metaHTi0mahAOXDFPw27ADFyXYJY+FjIwssvpu5AiAy
+j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
+-----END RSA PRIVATE KEY-----`,
+      {
+        algorithm: "RS256",
+      }
+    );
+
+    const payload = {
+      uri: `${uri}/survey-responses`,
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+    };
+
+    // Perform a POST request to /survey-responses
+    const { res, body } = await new Promise((resolve) => {
+      req.get(payload, (err, res, body) => resolve({ res, body }));
+    });
+
+    // Check that the server returns a 401 status code
+    expect(res.statusCode).to.equal(401);
+    expect(body).to.equal("Unauthorized");
+    return Promise.resolve();
+  });
+
+  it("GET /survey-responses should return 401 if no authorization header is present", async () => {
+    const payload = {
+      uri: `${uri}/survey-responses`,
+    };
+
+    // Perform a POST request to /survey-responses
+    const { res, body } = await new Promise((resolve) => {
+      req.get(payload, (err, res, body) => resolve({ res, body }));
+    });
+
+    // Check that the server returns a 401 status code
+    expect(res.statusCode).to.equal(401);
+    expect(body).to.equal("Unauthorized");
     return Promise.resolve();
   });
 
@@ -103,7 +170,7 @@ describe.only("SurveyResponses endpoint", () => {
     return Promise.resolve();
   });
 
-  it("should return 401 if JWT is expired", async () => {
+  it("POST /survey-responses should return 401 if JWT is expired", async () => {
     // Create an expired JWT signed with the RSA private key
     const token = jwt.sign(
       {
@@ -139,7 +206,7 @@ describe.only("SurveyResponses endpoint", () => {
     return Promise.resolve();
   });
 
-  it("should return 401 if JWT is signed with wrong key", async () => {
+  it("POST /survey-responses should return 401 if JWT is signed with wrong key", async () => {
     // Create a JWT signed with a different RSA private key
     const token = jwt.sign(
       {
@@ -182,7 +249,7 @@ j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
     return Promise.resolve();
   });
 
-  it("should return 401 if the authorization header is missing", async () => {
+  it("POST /survey-responses should return 401 if the authorization header is missing", async () => {
     const payload = {
       uri: `${uri}/survey-responses`,
       body: {
