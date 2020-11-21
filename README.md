@@ -131,7 +131,7 @@ Will be using Sequelize to connect to a Postgres database instance.
 https://sequelize.org/master/manual/getting-started.html
 
 ```
-npm install sequelize pg pg-hstore lodash dotenv --save
+npm install sequelize pg pg-hstore --save
 ```
 
 ### Create the database
@@ -147,41 +147,23 @@ CREATE DATABASE survey_test;
 \q
 ```
 
-### Setup the development and test environments
+### Setup a .env file
+
+`npm install dotenv --save`
 
 ```
 mkdir api
-mkdir api/database
-touch api/database/config.js
+touch api/.env
 ```
 
-```js
-// api/database/config.js
-module.exports = {
-  production: {
-    database: process.env.CLOUD_SQL_DATABASE,
-    username: process.env.CLOUD_SQL_USERNAME,
-    password: process.env.CLOUD_SQL_PASSWORD,
-    host: process.env.CLOUD_SQL_HOST,
-    dialect: "postgres",
-  },
-  development: {
-    database: "survey_dev",
-    dialect: "postgres",
-    username: "postgres",
-    password: null,
-    host: "localhost",
-    port: 5432,
-  },
-  test: {
-    database: "survey_test",
-    dialect: "postgres",
-    username: "postgres",
-    password: null,
-    host: "localhost",
-    port: 5432,
-  },
-};
+```
+# api/.env
+DATABASE_Name=survey_dev
+DATABASE_USERNAME=postgres
+DATABASE_PASSWORD=null
+DATABASE_HOST=localhost
+DATABASE_DIALECT=postgres
+DATABASE_PORT=5431
 ```
 
 ### Use this information to create DB connection instance
@@ -193,18 +175,16 @@ touch api/database/instance.js
 ```js
 // api/database/instance.js
 const { Sequelize } = require("sequelize");
-const env = process.env.NODE_ENV || "development";
-const config = require("./config.js")[env];
 const db = {};
 
 const sequelize = new Sequelize(
-  config.database,
-  config.username,
-  config.password,
+  process.env.DATABASE_NAME,
+  process.env.DATABASE_USERNAME,
+  process.env.DATABASE_PASSWORD,
   {
-    dialect: config.dialect,
-    host: config.host || "localhost",
-    port: config.port || 5432,
+    dialect: process.env.DATABASE_DIALECT,
+    host: process.env.DATABASE_HOST || "localhost",
+    port: process.env.DATABASE_PORT || 5432,
   }
 );
 
@@ -281,14 +261,16 @@ Add folders for the migrations and models
 mkdir api/database/migrations
 mkdir api/models
 touch .sequelizerc
+touch api/database/migration.config.js
 ```
 
 ```js
 // .sequelizerc
+require("dotenv").config({ path: "./api/.env" });
 const path = require("path");
 
 module.exports = {
-  config: path.resolve("api", "database/config.js"),
+  config: path.resolve("api", "database/migration.config.js"),
   "models-path": path.resolve("api", "models"),
   "migrations-path": path.resolve("api", "database/migrations"),
 };
@@ -393,18 +375,16 @@ const fs = require("fs");
 const path = require("path");
 const modelsDirectory = path.join(__dirname, "../models");
 const { Sequelize } = require("sequelize");
-const env = process.env.NODE_ENV || "development";
-const config = require("./config.js")[env];
 const db = {};
 
 const sequelize = new Sequelize(
-  config.database,
-  config.username,
-  config.password,
+  process.env.DATABASE_NAME,
+  process.env.DATABASE_USERNAME,
+  process.env.DATABASE_PASSWORD,
   {
-    dialect: config.dialect,
-    host: config.host || "localhost",
-    port: config.port || 5432,
+    dialect: process.env.DATABASE_DIALECT,
+    host: process.env.DATABASE_HOST || "localhost",
+    port: process.env.DATABASE_PORT || 5432,
   }
 );
 
@@ -506,6 +486,7 @@ In the `test.config.js` file, we can define a `resetDb` helper function for our 
 
 ```js
 // test.config.js
+process.env.DATABASE_NAME = "survey_test";
 const { sequelize, modelNames } = require("../database/instance.js");
 
 const Test = {};
@@ -865,6 +846,11 @@ Tb8cVka/B0xrWTAX/G+7l1fA7aEWX7/OJsAXkD4aEp3e/d3rNFH/KacCAwEAAQ==
 
 ```js
 // api/test/test.config.js
+process.env.RSA_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
+MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJ8PxdNGVwO0Wl4irLuYyrYvNCHMO2Zc
+Tb8cVka/B0xrWTAX/G+7l1fA7aEWX7/OJsAXkD4aEp3e/d3rNFH/KacCAwEAAQ==
+-----END PUBLIC KEY-----`;
+
 Test.rsaPrivateKey = `-----BEGIN RSA PRIVATE KEY-----
 MIIBOwIBAAJBAJ8PxdNGVwO0Wl4irLuYyrYvNCHMO2ZcTb8cVka/B0xrWTAX/G+7
 l1fA7aEWX7/OJsAXkD4aEp3e/d3rNFH/KacCAwEAAQJBAJy/B1zPeVpONauEkiIA
@@ -874,14 +860,6 @@ BfUeyvoXfxIeNtwEZkTnqRdxmdCKK43xAiEAi4fv9aHEpXIItlTs5a0z+KnBY+86
 Qesx5AOkwEFLKT8CICbX2fh/gwoi/nOuXEqpnJVGSW3DFGdGdF7PH2Dnq6jxAiBv
 x/s4QxfQhYvhPMXisV1PYQ0O2VMMBe4PO7Ioi4xMqQ==
 -----END RSA PRIVATE KEY-----`;
-```
-
-```js
-// server.js
-const rsaPublicKey = `-----BEGIN PUBLIC KEY-----
-MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJ8PxdNGVwO0Wl4irLuYyrYvNCHMO2Zc
-Tb8cVka/B0xrWTAX/G+7l1fA7aEWX7/OJsAXkD4aEp3e/d3rNFH/KacCAwEAAQ==
------END PUBLIC KEY-----`;
 ```
 
 Now we can update our test for `POST /survey-responses`.
@@ -1119,3 +1097,44 @@ app.post("/survey-responses", async (req, res) => {
   }
 });
 ```
+
+## Add RSA public key for development mode
+
+Our tests are working, but we're using a dummy RSA public key. That won't work for development or production, so we need to add the "test mode" key from Userfront to our .env file.
+
+Find the RSA public key in the Userfront dashboard
+
+```
+-----BEGIN RSA PUBLIC KEY-----
+MIIBigKCAYEAymqnnSQInFgmVhsSLyZWCKCObqCcZQQHrOdE/aqVwvaSyIbbpc01
++/lucPrdsKUAQCo0C93GsoDRXUYOEJ4Gl2z0H3SpOtbmSDTp6mWKU4NZvxKzG/Y2
+VXMzgg510GOAvfXQABpKyvbjriXPJ9SOCxeAqlu3nHnKY9lWbmduBAF3AOa1Irhu
+i1NigCdkl0anHGYuCpufpkk8PnyrvDWe9GRJLBVd61ImeLl9EFysomF/H0wIgOvX
+o+WLQNx/61m4JTODQDbf8R9uWr8eqAFfgt26BU4p1lUQPg6rAc6+9Ry3K0jAJB0b
+44pcEd6U5a7rjerzu1IMHIQXJXRDicJE1wYIe8iu7xCAyTvG1DOKFIuT/1Ny8Au/
+ggbpBU+tnnH4cF+9DbOT3wi94sj85JsEN8V3VOtFPHeHlZSo3nOi5QqaJiSjHoCI
+O35Ql0ouy7Qe8i8YWibbrfm7lrO7TlYF89tiPhQc/TgYsD+iqMwDsgffgHLClZHQ
+ln5rVhbqZlcZAgMBAAE=
+-----END RSA PUBLIC KEY-----
+```
+
+In order to add a multi-line RSA key to the .env file, we need to put the value in double quotes `" "` and replace the newlines with `/n`.
+
+```
+# api/.env
+DATABASE_NAME=survey_dev
+DATABASE_USERNAME=postgres
+DATABASE_PASSWORD=null
+DATABASE_HOST=localhost
+DATABASE_DIALECT=postgres
+DATABASE_PORT=5431
+RSA_PUBLIC_KEY="-----BEGIN RSA PUBLIC KEY-----\nMIIBigKCAYEAymqnnSQInFgmVhsSLyZWCKCObqCcZQQHrOdE/aqVwvaSyIbbpc01\n+/lucPrdsKUAQCo0C93GsoDRXUYOEJ4Gl2z0H3SpOtbmSDTp6mWKU4NZvxKzG/Y2\nVXMzgg510GOAvfXQABpKyvbjriXPJ9SOCxeAqlu3nHnKY9lWbmduBAF3AOa1Irhu\ni1NigCdkl0anHGYuCpufpkk8PnyrvDWe9GRJLBVd61ImeLl9EFysomF/H0wIgOvX\no+WLQNx/61m4JTODQDbf8R9uWr8eqAFfgt26BU4p1lUQPg6rAc6+9Ry3K0jAJB0b\n44pcEd6U5a7rjerzu1IMHIQXJXRDicJE1wYIe8iu7xCAyTvG1DOKFIuT/1Ny8Au/\nggbpBU+tnnH4cF+9DbOT3wi94sj85JsEN8V3VOtFPHeHlZSo3nOi5QqaJiSjHoCI\nO35Ql0ouy7Qe8i8YWibbrfm7lrO7TlYF89tiPhQc/TgYsD+iqMwDsgffgHLClZHQ\nln5rVhbqZlcZAgMBAAE=\n-----END RSA PUBLIC KEY-----"
+```
+
+### Try the development site
+
+```
+nodemon server.js
+```
+
+Now submitting our survey when logged in should work.

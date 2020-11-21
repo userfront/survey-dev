@@ -1,7 +1,8 @@
+require("dotenv").config({ path: "./api/.env" });
 const path = require('path');
 
 module.exports = {
-  'config': path.resolve('api', 'database/config.js'),
+  'config': path.resolve('api', 'database/migration.config.js'),
   'models-path': path.resolve('api', 'models'),
   'migrations-path': path.resolve('api', 'database/migrations')
 };

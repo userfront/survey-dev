@@ -2,18 +2,16 @@ const fs = require("fs");
 const path = require("path");
 const modelsDirectory = path.join(__dirname, "../models");
 const { Sequelize } = require("sequelize");
-const env = process.env.NODE_ENV || "development";
-const config = require("./config.js")[env];
 const db = {};
 
 const sequelize = new Sequelize(
-  config.database,
-  config.username,
-  config.password,
+  process.env.DATABASE_NAME,
+  process.env.DATABASE_USERNAME,
+  process.env.DATABASE_PASSWORD,
   {
-    dialect: config.dialect,
-    host: config.host || "localhost",
-    port: config.port || 5432,
+    dialect: process.env.DATABASE_DIALECT,
+    host: process.env.DATABASE_HOST || "localhost",
+    port: process.env.DATABASE_PORT || 5432,
   }
 );
 

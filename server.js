@@ -1,13 +1,9 @@
+require("dotenv").config({ path: "./api/.env" });
 const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
 const app = express();
 const jwt = require("jsonwebtoken");
-
-const rsaPublicKey = `-----BEGIN PUBLIC KEY-----
-MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJ8PxdNGVwO0Wl4irLuYyrYvNCHMO2Zc
-Tb8cVka/B0xrWTAX/G+7l1fA7aEWX7/OJsAXkD4aEp3e/d3rNFH/KacCAwEAAQ==
------END PUBLIC KEY-----`;
 
 app.use(express.static(path.join(__dirname, "build")));
 app.use(bodyParser.json());
@@ -29,7 +25,9 @@ app.get("/survey-responses", async (req, res) => {
 app.post("/survey-responses", async (req, res) => {
   try {
     const token = req.headers.authorization.replace("Bearer ", "");
-    const verified = jwt.verify(token, rsaPublicKey, { algorithm: "RS256" });
+    const verified = jwt.verify(token, process.env.RSA_PUBLIC_KEY, {
+      algorithm: "RS256",
+    });
     const surveyResponse = await sequelize.models.SurveyResponse.create({
       userId: verified.userId,
       data: req.body.data,
