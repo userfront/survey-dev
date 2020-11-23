@@ -1,10 +1,11 @@
 import axios from "axios";
 import Cookie from "js-cookie";
-import * as Survey from "survey-react";
+import * as SurveyJS from "survey-react";
 import "survey-react/modern.css";
+import { Grid } from "gridjs-react";
 import questions from "./questions.js";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
   Switch,
@@ -12,18 +13,18 @@ import {
   NavLink,
 } from "react-router-dom";
 
-import Toolkit from "@userfront/react";
-const Signup = Toolkit.signupForm({
+import Userfront from "@userfront/react";
+const Signup = Userfront.signupForm({
   toolId: "mnbrak",
   tenantId: "5xbpy4nz",
 });
-const Login = Toolkit.signupForm({
+const Login = Userfront.signupForm({
   toolId: "nadrrd",
   tenantId: "5xbpy4nz",
 });
 
-Survey.StylesManager.applyTheme("modern");
-const survey = new Survey.Model(questions);
+SurveyJS.StylesManager.applyTheme("modern");
+const survey = new SurveyJS.Model(questions);
 
 survey.onComplete.add(function (result) {
   axios.post(
@@ -42,13 +43,26 @@ survey.onComplete.add(function (result) {
 function App() {
   return (
     <Router>
-      <div>
+      <div className="App">
         <nav className="navbar navbar-expand-lg navbar-light">
           <NavLink to="/" className="navbar-brand">
             Survey.dev
           </NavLink>
 
           <ul className="navbar-nav mr-auto">
+            <li className="nav-item">
+              <NavLink to="/survey" className="nav-link">
+                Survey
+              </NavLink>
+            </li>
+            <li className="nav-item">
+              <NavLink to="/results" className="nav-link">
+                Results
+              </NavLink>
+            </li>
+          </ul>
+
+          <ul className="navbar-nav ml-auto">
             <li className="nav-item">
               <NavLink to="/login" className="nav-link">
                 Login
@@ -59,27 +73,15 @@ function App() {
                 Signup
               </NavLink>
             </li>
-            <li className="nav-item">
-              <NavLink to="/survey" className="nav-link">
-                Survey
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink to="/survey-responses" className="nav-link">
-                Responses
-              </NavLink>
-            </li>
           </ul>
         </nav>
 
         <Switch>
-          <Route path="/survey-responses">
-            <Responses />
+          <Route path="/results">
+            <Results />
           </Route>
           <Route path="/survey">
-            <div className="App">
-              <Survey.Survey model={survey} />
-            </div>
+            <Survey />
           </Route>
           <Route path="/login">
             <Login />
@@ -102,6 +104,58 @@ function Landing() {
   return <h2>Landing</h2>;
 }
 
-function Responses() {
-  return <h2>Responses</h2>;
+function Survey() {
+  const [response, setResponse] = useState({});
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      const { data } = await axios.get(
+        "http://localhost:5000/survey-responses",
+        {
+          headers: {
+            Authorization: `Bearer ${Cookie.get("access.5xbpy4nz")}`,
+          },
+        }
+      );
+      if (isMounted) {
+        setResponse(data.surveyResponses[0]);
+      }
+    })();
+    return () => {
+      isMounted = false;
+    };
+  });
+  if (response.id) {
+    return (
+      <div>
+        <ul>{response}</ul>
+        {/* <Grid
+          columns={[
+            {
+              name: "Technology",
+              id(row) {
+                return row.join(",");
+              },
+            },
+            // { id: "createdAt", name: "Created At" },
+          ]}
+          data={listItems[0].data}
+        /> */}
+      </div>
+    );
+  } else {
+    return (
+      <div>
+        <SurveyJS.Survey model={survey} />
+      </div>
+    );
+  }
+}
+
+function Results() {
+  return (
+    <div>
+      <h2>Results</h2>
+    </div>
+  );
 }

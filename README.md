@@ -24,12 +24,12 @@ Update App.js
 
 ```js
 // App.js
-import * as Survey from "survey-react";
+import * as SurveyJS from "survey-react";
 import "survey-react/modern.css";
 import questions from "./questions.js";
 
-Survey.StylesManager.applyTheme("modern");
-const survey = new Survey.Model(questions);
+SurveyJS.StylesManager.applyTheme("modern");
+const survey = new SurveyJS.Model(questions);
 survey.onComplete.add(function (result) {
   console.log(result.data);
 });
@@ -37,7 +37,7 @@ survey.onComplete.add(function (result) {
 function App() {
   return (
     <div className="App">
-      <Survey.Survey model={survey} />
+      <SurveyJS.Survey model={survey} />
     </div>
   );
 }
@@ -704,12 +704,12 @@ npm install axios --save-dev
 // src/App.js
 // Add axios and use it to send the data with survey.onComplete
 import axios from "axios";
-import * as Survey from "survey-react";
+import * as SurveyJS from "survey-react";
 import "survey-react/modern.css";
 import questions from "./questions.js";
 
-Survey.StylesManager.applyTheme("modern");
-const survey = new Survey.Model(questions);
+SurveyJS.StylesManager.applyTheme("modern");
+const survey = new SurveyJS.Model(questions);
 
 survey.onComplete.add((result) => {
   axios.post("http://localhost:5000/survey-responses", {
@@ -720,7 +720,7 @@ survey.onComplete.add((result) => {
 function App() {
   return (
     <div className="App">
-      <Survey.Survey model={survey} />
+      <SurveyJS.Survey model={survey} />
     </div>
   );
 }
@@ -1302,4 +1302,45 @@ it("GET /survey-responses should return 401 if no authorization header is presen
 
 This test will already pass. It's a good practice to comment out the `try/catch` block we just added to `server.js` to check that this test will fail without the block. If it does fail without that block, then we know the test is working correctly.
 
-## Displaying responses in the browser
+## Displaying response in the browser
+
+We have an endpoint to return a user's responses. Now we want our app to show these responses instead of the survey if the user has completed the survey.
+
+```js
+function Survey() {
+  const [responses, setResponses] = useState([]);
+  const listItems = responses.map((response) => (
+    <li>{JSON.stringify(response)}</li>
+  ));
+  useEffect(() => {
+    (async () => {
+      const { data } = await axios.get(
+        "http://localhost:5000/survey-responses",
+        {
+          headers: {
+            Authorization: `Bearer ${Cookie.get("access.5xbpy4nz")}`,
+          },
+        }
+      );
+      setResponses(data.surveyResponses);
+    })();
+  });
+  if (responses.length > 0) {
+    return (
+      <div>
+        <ul>{listItems}</ul>
+      </div>
+    );
+  } else {
+    return (
+      <div>
+        <SurveyJS.Survey model={survey} />
+      </div>
+    );
+  }
+}
+```
+
+Make it look nice with Grid.js
+
+`npm i --D gridjs gridjs-react`

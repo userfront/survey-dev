@@ -50,6 +50,8 @@
   "devDependencies": {
     "axios": "^0.21.0",
     "chai": "^4.2.0",
+    "gridjs": "^3.0.2",
+    "gridjs-react": "^3.0.2",
     "js-cookie": "^2.2.1",
     "mocha": "^8.2.0",
     "nodemon": "^2.0.6",
