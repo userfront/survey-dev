@@ -157,11 +157,7 @@ function LoginLogout() {
     return (
       <ul className="navbar-nav ml-auto">
         <li className="nav-item">
-          <a
-            href="javascript:void(0);"
-            className="nav-link"
-            onClick={Userfront.logout}
-          >
+          <a href="/" className="nav-link" onClick={Userfront.logout}>
             Logout
           </a>
         </li>
