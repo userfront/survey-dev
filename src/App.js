@@ -2,7 +2,6 @@ import axios from "axios";
 import Cookie from "js-cookie";
 import * as SurveyJS from "survey-react";
 import "survey-react/modern.css";
-import { Grid } from "gridjs-react";
 import questions from "./questions.js";
 
 import React, { useState, useEffect } from "react";
@@ -14,24 +13,25 @@ import {
 } from "react-router-dom";
 
 import Userfront from "@userfront/react";
-const Signup = Userfront.signupForm({
+Userfront.init("5xbpy4nz");
+const Signup = Userfront.build({
   toolId: "mnbrak",
   tenantId: "5xbpy4nz",
 });
-const Login = Userfront.signupForm({
+const Login = Userfront.build({
   toolId: "nadrrd",
   tenantId: "5xbpy4nz",
 });
 
+console.log(Userfront);
+
 SurveyJS.StylesManager.applyTheme("modern");
 const survey = new SurveyJS.Model(questions);
 
-survey.onComplete.add(function (result) {
+survey.onComplete.add(({ data }) => {
   axios.post(
     "http://localhost:5000/survey-responses",
-    {
-      data: result.data,
-    },
+    { data },
     {
       headers: {
         Authorization: `Bearer ${Cookie.get("access.5xbpy4nz")}`,
@@ -44,7 +44,7 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <nav className="navbar navbar-expand-lg navbar-light">
+        <nav className="navbar navbar-expand-lg navbar-dark bg-success">
           <NavLink to="/" className="navbar-brand">
             Survey.dev
           </NavLink>
@@ -62,18 +62,7 @@ function App() {
             </li>
           </ul>
 
-          <ul className="navbar-nav ml-auto">
-            <li className="nav-item">
-              <NavLink to="/login" className="nav-link">
-                Login
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink to="/signup" className="nav-link">
-                Signup
-              </NavLink>
-            </li>
-          </ul>
+          <LoginLogout />
         </nav>
 
         <Switch>
@@ -107,40 +96,26 @@ function Landing() {
 function Survey() {
   const [response, setResponse] = useState({});
   useEffect(() => {
-    let isMounted = true;
-    (async () => {
-      const { data } = await axios.get(
-        "http://localhost:5000/survey-responses",
-        {
+    if (!response.id) {
+      axios
+        .get("http://localhost:5000/survey-responses", {
           headers: {
             Authorization: `Bearer ${Cookie.get("access.5xbpy4nz")}`,
           },
-        }
-      );
-      if (isMounted) {
-        setResponse(data.surveyResponses[0]);
-      }
-    })();
-    return () => {
-      isMounted = false;
-    };
+        })
+        .then(({ data }) => {
+          setResponse(data.surveyResponses[0]);
+        });
+    }
   });
-  if (response.id) {
+  if (response.data) {
+    const surveyView = new SurveyJS.Model(questions);
+    surveyView.data = response.data;
+    surveyView.mode = "display";
+
     return (
       <div>
-        <ul>{response}</ul>
-        {/* <Grid
-          columns={[
-            {
-              name: "Technology",
-              id(row) {
-                return row.join(",");
-              },
-            },
-            // { id: "createdAt", name: "Created At" },
-          ]}
-          data={listItems[0].data}
-        /> */}
+        <SurveyJS.Survey model={surveyView} />
       </div>
     );
   } else {
@@ -148,6 +123,36 @@ function Survey() {
       <div>
         <SurveyJS.Survey model={survey} />
       </div>
+    );
+  }
+}
+
+function LoginLogout() {
+  const isLoggedIn = () => Cookie.get("access.5xbpy4nz");
+  if (isLoggedIn()) {
+    return (
+      <ul className="navbar-nav ml-auto">
+        <li className="nav-item">
+          <a href="#" className="nav-link" onClick={Userfront.logout}>
+            Logout
+          </a>
+        </li>
+      </ul>
+    );
+  } else {
+    return (
+      <ul className="navbar-nav ml-auto">
+        <li className="nav-item">
+          <NavLink to="/login" className="nav-link">
+            Login
+          </NavLink>
+        </li>
+        <li className="nav-item">
+          <NavLink to="/signup" className="nav-link">
+            Signup
+          </NavLink>
+        </li>
+      </ul>
     );
   }
 }
