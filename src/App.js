@@ -9,6 +9,7 @@ import {
   BrowserRouter as Router,
   Switch,
   Route,
+  Link,
   NavLink,
 } from "react-router-dom";
 
@@ -22,8 +23,6 @@ const Login = Userfront.build({
   toolId: "nadrrd",
   tenantId: "5xbpy4nz",
 });
-
-console.log(Userfront);
 
 SurveyJS.StylesManager.applyTheme("modern");
 const survey = new SurveyJS.Model(questions);
@@ -44,7 +43,7 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <nav className="navbar navbar-expand-lg navbar-dark bg-success">
+        <nav className="navbar navbar-expand-lg py-4">
           <NavLink to="/" className="navbar-brand">
             Survey.dev
           </NavLink>
@@ -65,23 +64,25 @@ function App() {
           <LoginLogout />
         </nav>
 
-        <Switch>
-          <Route path="/results">
-            <Results />
-          </Route>
-          <Route path="/survey">
-            <Survey />
-          </Route>
-          <Route path="/login">
-            <Login />
-          </Route>
-          <Route path="/signup">
-            <Signup />
-          </Route>
-          <Route path="/">
-            <Landing />
-          </Route>
-        </Switch>
+        <div className="container my-5">
+          <Switch>
+            <Route path="/results">
+              <Results />
+            </Route>
+            <Route path="/survey">
+              <Survey />
+            </Route>
+            <Route path="/login">
+              <Login />
+            </Route>
+            <Route path="/signup">
+              <Signup />
+            </Route>
+            <Route path="/">
+              <Landing />
+            </Route>
+          </Switch>
+        </div>
       </div>
     </Router>
   );
@@ -90,7 +91,30 @@ function App() {
 export default App;
 
 function Landing() {
-  return <h2>Landing</h2>;
+  return (
+    <div className="row">
+      <div className="col-md-6">
+        <div className="card shadow">
+          <div className="card-body">
+            <h5 className="card-title">
+              2020 Survey of Web Development Freelancers & Agencies
+            </h5>
+            <h6 class="card-subtitle mb-2 text-muted">survey.dev</h6>
+            <p class="card-text">
+              Take the 2020 survey to share and learn about pay trends across
+              regions and technologies.
+            </p>
+            <Link to="/survey" className="card-link">
+              Survey
+            </Link>
+            <Link to="/results" className="card-link">
+              Results
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function Survey() {
