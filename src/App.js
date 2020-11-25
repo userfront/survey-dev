@@ -1,5 +1,4 @@
 import axios from "axios";
-import Cookie from "js-cookie";
 import * as SurveyJS from "survey-react";
 import "survey-react/modern.css";
 import questions from "./questions.js";
@@ -11,18 +10,19 @@ import {
   Route,
   Link,
   NavLink,
+  Redirect,
 } from "react-router-dom";
 
 import Userfront from "@userfront/react";
 Userfront.init("5xbpy4nz");
 const Signup = Userfront.build({
   toolId: "mnbrak",
-  tenantId: "5xbpy4nz",
 });
 const Login = Userfront.build({
   toolId: "nadrrd",
-  tenantId: "5xbpy4nz",
 });
+
+const isLoggedIn = () => Userfront.accessToken();
 
 SurveyJS.StylesManager.applyTheme("modern");
 const survey = new SurveyJS.Model(questions);
@@ -33,7 +33,7 @@ survey.onComplete.add(({ data }) => {
     { data },
     {
       headers: {
-        Authorization: `Bearer ${Cookie.get("access.5xbpy4nz")}`,
+        Authorization: `Bearer ${Userfront.accessToken()}`,
       },
     }
   );
@@ -42,29 +42,30 @@ survey.onComplete.add(({ data }) => {
 function App() {
   return (
     <Router>
-      <div className="App">
-        <nav className="navbar navbar-expand-lg py-4">
-          <NavLink to="/" className="navbar-brand">
-            Survey.dev
-          </NavLink>
+      <div>
+        <nav className="navbar navbar-expand-lg bg-white py-4 shadow">
+          <div className="container">
+            <NavLink exact to="/" className="btn btn-outline-primary mr-4">
+              survey.dev
+            </NavLink>
 
-          <ul className="navbar-nav mr-auto">
-            <li className="nav-item">
-              <NavLink to="/survey" className="nav-link">
-                Survey
-              </NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink to="/results" className="nav-link">
-                Results
-              </NavLink>
-            </li>
-          </ul>
-
-          <LoginLogout />
+            <ul className="navbar-nav mr-auto">
+              <li className="nav-item">
+                <NavLink to="/survey" className="nav-link">
+                  Survey
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink to="/results" className="nav-link">
+                  Results
+                </NavLink>
+              </li>
+            </ul>
+            <LoginLogout />
+          </div>
         </nav>
 
-        <div className="container my-5">
+        <div>
           <Switch>
             <Route path="/results">
               <Results />
@@ -73,10 +74,14 @@ function App() {
               <Survey />
             </Route>
             <Route path="/login">
-              <Login />
+              <div className="container py-5">
+                <Login />
+              </div>
             </Route>
             <Route path="/signup">
-              <Signup />
+              <div className="container py-5">
+                <Signup />
+              </div>
             </Route>
             <Route path="/">
               <Landing />
@@ -92,24 +97,39 @@ export default App;
 
 function Landing() {
   return (
-    <div className="row">
-      <div className="col-md-6">
-        <div className="card shadow">
-          <div className="card-body">
-            <h5 className="card-title">
-              2020 Survey of Web Development Freelancers & Agencies
-            </h5>
-            <h6 class="card-subtitle mb-2 text-muted">survey.dev</h6>
-            <p class="card-text">
-              Take the 2020 survey to share and learn about pay trends across
-              regions and technologies.
-            </p>
-            <Link to="/survey" className="card-link">
-              Survey
-            </Link>
-            <Link to="/results" className="card-link">
-              Results
-            </Link>
+    <div
+      style={{
+        backgroundImage:
+          "url(https://images.pexels.com/photos/1181676/pexels-photo-1181676.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260)",
+        backgroundSize: "cover",
+        backgroundPosition: "right center",
+        minHeight: "100vh",
+      }}
+    >
+      <div className="container">
+        <div className="row py-5">
+          <div className="col-md-6">
+            <div className="card shadow border-0">
+              <div className="card-body">
+                <h1 className="card-title" style={{ fontSize: "1.75rem" }}>
+                  2020 Survey of
+                  <br />
+                  Web Freelancers & Agencies
+                </h1>
+                <div className="my-4">
+                  <Link to="/survey" className="btn btn-primary mr-3">
+                    Survey
+                  </Link>
+                  <Link to="/results" className="btn btn-outline-primary">
+                    Results
+                  </Link>
+                </div>
+                <p className="card-text">
+                  Take the 2020 survey to share and learn about pay trends
+                  across regions and technologies.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -124,7 +144,7 @@ function Survey() {
       axios
         .get("http://localhost:5000/survey-responses", {
           headers: {
-            Authorization: `Bearer ${Cookie.get("access.5xbpy4nz")}`,
+            Authorization: `Bearer ${Userfront.accessToken()}`,
           },
         })
         .then(({ data }) => {
@@ -132,19 +152,20 @@ function Survey() {
         });
     }
   });
+  if (!isLoggedIn()) return <Redirect to={{ pathname: "/login" }} />;
   if (response.data) {
     const surveyView = new SurveyJS.Model(questions);
     surveyView.data = response.data;
     surveyView.mode = "display";
 
     return (
-      <div>
+      <div className="container">
         <SurveyJS.Survey model={surveyView} />
       </div>
     );
   } else {
     return (
-      <div>
+      <div className="container">
         <SurveyJS.Survey model={survey} />
       </div>
     );
@@ -152,14 +173,13 @@ function Survey() {
 }
 
 function LoginLogout() {
-  const isLoggedIn = () => Cookie.get("access.5xbpy4nz");
   if (isLoggedIn()) {
     return (
       <ul className="navbar-nav ml-auto">
         <li className="nav-item">
-          <a href="/" className="nav-link" onClick={Userfront.logout}>
+          <button className="btn btn-link nav-link" onClick={Userfront.logout}>
             Logout
-          </a>
+          </button>
         </li>
       </ul>
     );
@@ -182,8 +202,9 @@ function LoginLogout() {
 }
 
 function Results() {
+  if (!isLoggedIn()) return <Redirect to={{ pathname: "/login" }} />;
   return (
-    <div>
+    <div className="container py-5">
       <h2>Results</h2>
     </div>
   );
