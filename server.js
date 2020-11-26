@@ -5,7 +5,6 @@ const path = require("path");
 const app = express();
 const jwt = require("jsonwebtoken");
 
-app.use(express.static(path.join(__dirname, "build")));
 app.use(bodyParser.json());
 
 // Set up sequelize
@@ -15,6 +14,10 @@ app.all("/survey-responses", function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();
+});
+
+app.get("/status", async (req, res) => {
+  return res.send("ok");
 });
 
 app.get("/survey-responses", async (req, res) => {

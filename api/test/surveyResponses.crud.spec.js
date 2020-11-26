@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 const Test = require("./test.config.js");
 const { sequelize } = require("../database/instance.js");
 
-const uri = "http://localhost:3000";
+const uri = "http://localhost:5000";
 const req = request.defaults({
   json: true,
   uri,

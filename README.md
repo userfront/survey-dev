@@ -1,6 +1,6 @@
 # Survey.Dev
 
-The goal of this tutorial is to be a complete, step-by-step guide for building **real, secure, database-backed, production-ready** applications that you could use in professional work.
+The goal of this tutorial is to be a complete guide for building a **secure, database-backed, production-ready** application that you could use in professional work.
 
 This tutorial builds up both the frontend & backend of the [survey.dev](https://survey.dev) website.
 
@@ -1370,7 +1370,3 @@ function Survey() {
   }
 }
 ```
-
-Make it look nice with Grid.js
-
-`npm i --D gridjs gridjs-react`
