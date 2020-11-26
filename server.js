@@ -1,11 +1,12 @@
 require("dotenv").config({ path: "./api/.env" });
 const express = require("express");
 const bodyParser = require("body-parser");
-const path = require("path");
 const app = express();
 const jwt = require("jsonwebtoken");
 
 app.use(bodyParser.json());
+
+const rsaPublicKey = process.env.RSA_PUBLIC_KEY.replace("\\n", "\n");
 
 // Set up sequelize
 const { sequelize } = require("./api/database/instance.js");
@@ -19,7 +20,7 @@ app.all("/survey-responses", function (req, res, next) {
 app.get("/survey-responses", async (req, res) => {
   try {
     const token = req.headers.authorization.replace("Bearer ", "");
-    const verified = jwt.verify(token, process.env.RSA_PUBLIC_KEY, {
+    const verified = jwt.verify(token, rsaPublicKey, {
       algorithm: "RS256",
     });
     const surveyResponses = await sequelize.models.SurveyResponse.findAll({
@@ -36,7 +37,7 @@ app.get("/survey-responses", async (req, res) => {
 app.post("/survey-responses", async (req, res) => {
   try {
     const token = req.headers.authorization.replace("Bearer ", "");
-    const verified = jwt.verify(token, process.env.RSA_PUBLIC_KEY, {
+    const verified = jwt.verify(token, rsaPublicKey, {
       algorithm: "RS256",
     });
     const surveyResponse = await sequelize.models.SurveyResponse.create({
