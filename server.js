@@ -16,10 +16,6 @@ app.all("/survey-responses", function (req, res, next) {
   next();
 });
 
-app.get("/status", async (req, res) => {
-  return res.send("ok");
-});
-
 app.get("/survey-responses", async (req, res) => {
   try {
     const token = req.headers.authorization.replace("Bearer ", "");
@@ -53,8 +49,8 @@ app.post("/survey-responses", async (req, res) => {
   }
 });
 
-app.get("/", async (req, res) => {
-  return res.sendFile(path.join(__dirname, "build", "index.html"));
+app.get("/status", async (req, res) => {
+  return res.send("ok");
 });
 
 const port = process.env.PORT || 5000;

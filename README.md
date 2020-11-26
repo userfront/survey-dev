@@ -100,8 +100,8 @@ app.get("/survey-responses", function (req, res) {
   return res.send("Coming soon");
 });
 
-app.get("/", function (req, res) {
-  res.sendFile(path.join(__dirname, "build", "index.html"));
+app.get("/status", async (req, res) => {
+  return res.send("ok");
 });
 
 const port = process.env.PORT || 5000;
@@ -136,23 +136,6 @@ At this point, we have 2 servers running locally:
 | --------------------- | ---------------- | ----------------- | ------------------------------------------------ |
 | http://localhost:3000 | Create React App | npm start         | Serve the hot-reloaded React files.              |
 | http://localhost:5000 | Express.js       | nodemon server.js | Receive API requests and interact with database. |
-
-In production, we will only use the Express server; it will serve both the API and the files for our frontend React application. The React files will be added to a new `/build` folder during deploy.
-
-These lines in `server.js` will be responsible for serving the compiled React assets when in production:
-
-```js
-// server.js
-// Serve assets in the /build folder
-app.use(express.static(path.join(__dirname, "build")));
-
-...
-
-// Serve the /build/index.html file when the "/" path is requested
-app.get("/", async (req, res) => {
-  return res.sendFile(path.join(__dirname, "build", "index.html"));
-});
-```
 
 ## Add a database connection
 
@@ -232,7 +215,6 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
 const app = express();
-app.use(express.static(path.join(__dirname, "build")));
 
 // Set up sequelize
 const { sequelize } = require("./api/database/instance.js");
@@ -249,8 +231,8 @@ app.get("/survey-responses", async (req, res) => {
   return res.send("Coming soon");
 });
 
-app.get("/", async (req, res) => {
-  return res.sendFile(path.join(__dirname, "build", "index.html"));
+app.get("/status", async (req, res) => {
+  return res.send("ok");
 });
 
 const port = process.env.PORT || 5000;
