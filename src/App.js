@@ -15,7 +15,7 @@ import Userfront from "@userfront/react";
 
 const apiRoot =
   process.env.NODE_ENV === "production"
-    ? "https://survey.dev"
+    ? "https://api.survey.dev"
     : "http://localhost:5000";
 
 Userfront.init("5xbpy4nz");
