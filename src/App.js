@@ -2,7 +2,6 @@ import axios from "axios";
 import * as SurveyJS from "survey-react";
 import "survey-react/modern.css";
 import questions from "./questions.js";
-
 import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -12,8 +11,13 @@ import {
   NavLink,
   Redirect,
 } from "react-router-dom";
-
 import Userfront from "@userfront/react";
+
+const apiRoot =
+  process.env.NODE_ENV === "production"
+    ? "https://survey.dev"
+    : "http://localhost:5000";
+
 Userfront.init("5xbpy4nz");
 const Signup = Userfront.build({
   toolId: "mnbrak",
@@ -29,7 +33,7 @@ const survey = new SurveyJS.Model(questions);
 
 survey.onComplete.add(({ data }) => {
   axios.post(
-    "http://localhost:5000/survey-responses",
+    `${apiRoot}/survey-responses`,
     { data },
     {
       headers: {
@@ -142,7 +146,7 @@ function Survey() {
   useEffect(() => {
     if (!response.id) {
       axios
-        .get("http://localhost:5000/survey-responses", {
+        .get(`${apiRoot}/survey-responses`, {
           headers: {
             Authorization: `Bearer ${Userfront.accessToken()}`,
           },
