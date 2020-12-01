@@ -31,28 +31,17 @@ It uses the following tools:
 
 ## Sections
 
-Frontend
+|     | Frontend                               |     |     | Backend                   |
+| --- | -------------------------------------- | --- | --- | ------------------------- |
+| 1.  | [Design goals](#frontend-design-goals) |     | 1.  | Design goals              |
+| 2.  | Tools                                  |     | 2.  | Tools                     |
+| 3.  | Initial setup (Create React App)       |     | 3.  | Initial setup (Expres.js) |
+| 4.  | Routing                                |     | 4.  | Database setup            |
+| 5.  | Survey                                 |     | 5.  | Test-driven development   |
+| 6.  | Authentication                         |     | 6.  | Save survey records       |
+| 7.  | Authorization                          |     | 7.  | Read auth tokens (JWTs)   |
 
-1. [Design goals](#frontend-design-goals)
-2. Tools
-3. Initial setup (Create React App)
-4. Routing
-5. Survey
-6. Authentication
-7. Authorization
-
-Backend
-
-1. Design goals
-2. Tools
-3. Initial setup (Express.js)
-4. Database setup
-5. Test-driven development
-6. Saving a survey record
-7. Authentication
-8. Authorization
-
-Deployment
+There is also an optional section on [Deployment](#deployment).
 
 ## Frontend design goals
 
