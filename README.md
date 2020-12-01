@@ -6,27 +6,55 @@ This tutorial builds up both the frontend & backend of the [survey.dev](https://
 
 It uses the following tools:
 
-**Frontend**
+### Frontend
 
-| Tool         | Purpose                      |                                                                                                                                                                                                     |
-| ------------ | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| React        | User interface builder       | <a href="https://reactjs.org/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                    |
-| React DOM    | Renders React in the browser | <a href="https://reactjs.org/docs/react-dom.html" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a> |
-| React router | Client-side routing          | <a href="https://reactrouter.com/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                |
-| SurveyJS     | Submit and display surveys   | <a href="https://surveyjs.io/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                    |
-| Axios        | Make API requests            | <a href="https://github.com/axios/axios" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>          |
-| Userfront    | Authentication               | <a href="https://userfront.com/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                  |
+|                                                                                                                                                                                                     | Tool         | Purpose                      |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ---------------------------- |
+| <a href="https://reactjs.org/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                    | React        | User interface builder       |
+| <a href="https://reactjs.org/docs/react-dom.html" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a> | React DOM    | Renders React in the browser |
+| <a href="https://reactrouter.com/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                | React router | Client-side routing          |
+| <a href="https://surveyjs.io/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                    | SurveyJS     | Submit and display surveys   |
+| <a href="https://github.com/axios/axios" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>          | Axios        | Make API requests            |
+| <a href="https://userfront.com/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                  | Userfront    | Authentication               |
 
-**Backend**
-|Tool| Purpose| |
-|-|-| -|
-| Node | JavaScript runtime | <a href="https://nodejs.org/en/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a> |
-| Express.js | Web server framework | <a href="https://expressjs.com/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a> |
-| Postgres | Database | <a href="https://www.postgresql.org/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a> |
-| Sequelize | ORM (helps write database queries) | <a href="https://sequelize.org/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a> |
-| dotenv | Manage environment variables | <a href="https://github.com/motdotla/dotenv" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a> |
-| jsonwebtoken | Verify & decode auth tokens | <a href="https://github.com/auth0/node-jsonwebtoken" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a> |
-| Jest | Testing | <a href="https://jestjs.io/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a> |
+### Backend
+
+|                                                                                                                                                                                                        | Tool         | Purpose                            |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ | ---------------------------------- |
+| <a href="https://nodejs.org/en/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                     | Node         | JavaScript runtime                 |
+| <a href="https://expressjs.com/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                     | Express.js   | Web server framework               |
+| <a href="https://www.postgresql.org/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                | Postgres     | Database                           |
+| <a href="https://sequelize.org/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                     | Sequelize    | ORM (helps write database queries) |
+| <a href="https://github.com/motdotla/dotenv" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>         | dotenv       | Manage environment variables       |
+| <a href="https://github.com/auth0/node-jsonwebtoken" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a> | jsonwebtoken | Verify & decode auth tokens        |
+| <a href="https://jestjs.io/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                         | Jest         | Testing                            |
+
+## Sections
+
+Frontend
+
+1. [Design goals](#frontend-design-goals)
+2. Tools
+3. Initial setup (Create React App)
+4. Routing
+5. Survey
+6. Authentication
+7. Authorization
+
+Backend
+
+1. Design goals
+2. Tools
+3. Initial setup (Express.js)
+4. Database setup
+5. Test-driven development
+6. Saving a survey record
+7. Authentication
+8. Authorization
+
+Deployment
+
+## Frontend design goals
 
 ## Start with Create React App
 
