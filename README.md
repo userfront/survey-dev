@@ -4,7 +4,39 @@ The goal of this tutorial is to be a complete guide for building a **secure, dat
 
 This tutorial builds up both the frontend & backend of the [survey.dev](https://survey.dev) website.
 
-It uses the following tools:
+At a high level, this tutorial uses React and Node (Express), with all the other tools listed in the Tools section below:
+
+## Sections
+
+|     |                                                                          | Frontend | Backend |
+| --- | ------------------------------------------------------------------------ | :------: | :-----: |
+| 1.  | [Design goals](#design-goals)                                            |    ✓     |    ✓    |
+| 2.  | [Tools we will use](#tools)                                              |    ✓     |    ✓    |
+| 3.  | [Initial setup (Create React App)](#initial-setup-with-create-react-app) |    ✓     |         |
+| 4.  | [Add a JS library](#add-surveyjs)                                        |    ✓     |         |
+| 5.  | [Set up backend server (Express.js)](#set-up-backend-server)             |          |    ✓    |
+| 6.  | [Add a database connection](#add-a-database-connection)                  |          |    ✓    |
+| 7.  | [Testing](#testing)                                                      |          |    ✓    |
+| 8.  | [Save to the database](#save-a-survey-response-from-the-frontend)        |    ✓     |    ✓    |
+| 9.  | [Signup & login](#signup-and-login)                                      |    ✓     |         |
+| 10. | [Send a JWT with the request](#send-a-jwt-with-the-request)              |    ✓     |         |
+| 11. | [Verify the JWT access token](#verify-the-jwt-access-token)              |          |    ✓    |
+| 12. | [Add a protected route](#add-a-protected-route)                          |    ✓     |    ✓    |
+| 13. | [Notes on deployment](#notes-on-deployment)                              |    ✓     |    ✓    |
+
+---
+
+### 1.
+
+## Design goals
+
+---
+
+### 2.
+
+## Tools
+
+We will use the following tools:
 
 ### Frontend
 
@@ -29,23 +61,11 @@ It uses the following tools:
 | <a href="https://github.com/auth0/node-jsonwebtoken" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a> | jsonwebtoken | Verify & decode auth tokens        |
 | <a href="https://jestjs.io/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                         | Jest         | Testing                            |
 
-## Sections
+---
 
-|     | Frontend                               |     |     | Backend                   |
-| --- | -------------------------------------- | --- | --- | ------------------------- |
-| 1.  | [Design goals](#frontend-design-goals) |     | 1.  | Design goals              |
-| 2.  | Tools                                  |     | 2.  | Tools                     |
-| 3.  | Initial setup (Create React App)       |     | 3.  | Initial setup (Expres.js) |
-| 4.  | Routing                                |     | 4.  | Database setup            |
-| 5.  | Survey                                 |     | 5.  | Test-driven development   |
-| 6.  | Authentication                         |     | 6.  | Save survey records       |
-| 7.  | Authorization                          |     | 7.  | Read auth tokens (JWTs)   |
+### 3.
 
-There is also an optional section on [Deployment](#deployment).
-
-## Frontend design goals
-
-## Start with Create React App
+## Initial setup with Create React App
 
 https://create-react-app.dev/docs/getting-started/
 
@@ -57,7 +77,11 @@ npm start
 
 ![Create React App](https://res.cloudinary.com/component/image/upload/v1603496124/permanent/survey-tutorial-0.png)
 
-## Add survey-react
+---
+
+### 4.
+
+## Add SurveyJS
 
 https://surveyjs.io/Documentation/Library
 
@@ -92,7 +116,11 @@ function App() {
 export default App;
 ```
 
-## Add backend server
+---
+
+### 5.
+
+## Set up backend server
 
 ```
 npm install express --save
@@ -153,6 +181,10 @@ At this point, we have 2 servers running locally:
 | --------------------- | ---------------- | ----------------- | ------------------------------------------------ |
 | http://localhost:3000 | Create React App | npm start         | Serve the hot-reloaded React files.              |
 | http://localhost:5000 | Express.js       | nodemon server.js | Receive API requests and interact with database. |
+
+---
+
+### 6.
 
 ## Add a database connection
 
@@ -462,6 +494,10 @@ Now when we visit `http://localhost:5000/survey-responses` in the browser, it wi
 }
 ```
 
+---
+
+### 7.
+
 ## Testing
 
 At this point, it will be easier to develop our backend API using tests, instead of doing guess-and-check in the browser over and over.
@@ -721,6 +757,10 @@ app.post("/survey-responses", async (req, res) => {
 
 Now our tests are passing because the route creates a `surveyResponse` record and then sends it back to the requestor.
 
+---
+
+### 8.
+
 ## Save a survey response from the frontend
 
 Our backend is set up to receive and save a survey response when we `POST` to `/survey-responses`, so we can make our frontend do that.
@@ -777,7 +817,11 @@ npm i react-router-dom --save
 />
 ```
 
-## Login & Signup
+---
+
+### 9.
+
+## Signup and login
 
 Create an account at https://userfront.com
 
@@ -804,7 +848,11 @@ const Signup = Toolkit.build({
 
 In test mode, visit project settings and update "Login path" redirect
 
-## Send the token with the survey submission
+---
+
+### 10.
+
+## Send a JWT with the request
 
 We'll send the access token when we submit a survey response, which will allow the API to know what user is making the request. We'll use a bearer token in the request header, which will look like:
 
@@ -846,9 +894,13 @@ axios.post(
 );
 ```
 
-## Verify the Authorization token
+---
 
-Now that the client sends an Authorization JWT, we need to verify and decode it on the backend.
+### 11.
+
+## Verify the JWT access token
+
+Now that the client sends an access JWT, we need to verify and decode it on the backend.
 
 `npm install --save jsonwebtoken`
 
@@ -1127,7 +1179,7 @@ app.post("/survey-responses", async (req, res) => {
 });
 ```
 
-## Add RSA public key for development mode
+### Add RSA public key for development mode
 
 Our tests are working, but we're using a dummy RSA public key. That won't work for development or production, so we need to add the "test mode" key from Userfront to our .env file.
 
@@ -1168,7 +1220,11 @@ nodemon server.js
 
 Now submitting our survey when logged in should work.
 
-## Add the GET route
+---
+
+### 12.
+
+## Add a protected route
 
 Now instead of the `GET /survey-responses` route returning _all_ survey responses, we want it to only return the responses for the user that requests them.
 
@@ -1331,7 +1387,7 @@ it("GET /survey-responses should return 401 if no authorization header is presen
 
 This test will already pass. It's a good practice to comment out the `try/catch` block we just added to `server.js` to check that this test will fail without the block. If it does fail without that block, then we know the test is working correctly.
 
-## Displaying response in the browser
+### Displaying response in the browser
 
 We have an endpoint to return a user's responses. Now we want our app to show these responses instead of the survey if the user has completed the survey.
 
@@ -1369,3 +1425,9 @@ function Survey() {
   }
 }
 ```
+
+---
+
+### 13.
+
+## Notes on deployment
