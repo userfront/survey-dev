@@ -30,6 +30,25 @@ At a high level, this tutorial uses React and Node (Express), with all the other
 
 ## Design goals
 
+### Layout
+
+We want to build a site with the following pages:
+
+- **Landing page** - Give some information about the website.
+- **Survey page** - Allow a user to submit their survey.
+- **Results page** - Allow authorized users to view the survey results.
+- **Auth pages** - Allow users to sign up, log in, and reset their password.
+
+![Website design](https://res.cloudinary.com/component/image/upload/v1606931058/permanent/survey-dev-design.png)
+
+### Architecture
+
+We will build the frontend as a single-page app, and we'll build the backend as a standalone API.
+
+The frontend will communicate with the backend by making API requests using JSON Web Tokens (JWTs) for authorization.
+
+For this tutorial, the frontend and backend code will live in the same codebase. However, we could also choose to keep them completely separate from each other if we wanted.
+
 ---
 
 ### 2.
