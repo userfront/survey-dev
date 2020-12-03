@@ -7,7 +7,7 @@ This tutorial builds up both the frontend & backend of the [survey.dev](https://
 At a high level, this tutorial uses the following tools:
 
 | Frontend                                                                                |     | Backend                                                                                    |
-| --------------------------------------------------------------------------------------- | --- | ------------------------------------------------------------------------------------------ |
+| :-------------------------------------------------------------------------------------- | --- | :----------------------------------------------------------------------------------------- |
 | [React](https://reactjs.org/) <br> <small>User interface builder</small>                |     | [Node](https://nodejs.org/) <br > <small>JavaScript runtime</small>                        |
 | [React Router](https://reactrouter.com/) <br> <small>Client-side routing</small>        |     | [Express.js](https://expressjs.com/) <br> <small>Web server framework</small>              |
 | [SurveyJS](https://surveyjs.io/) <br> <small>Submit and display surveys</small>         |     | [Postgres](https://www.postgresql.org/) <br> <small>Database</small>                       |
@@ -19,7 +19,7 @@ At a high level, this tutorial uses the following tools:
 The tutorial will follow an outline similar to building from scratch:
 
 |     | Section                                                                  | Frontend | Backend |
-| --: | ------------------------------------------------------------------------ | :------: | :-----: |
+| --: | :----------------------------------------------------------------------- | :------: | :-----: |
 |  1. | [Design](#design)                                                        |    ✓     |    ✓    |
 |  2. | [Initial setup (Create React App)](#initial-setup-with-create-react-app) |    ✓     |         |
 |  3. | [Add routing, styling, and survey](#add-routing-styling-and-survey)      |    ✓     |         |
