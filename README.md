@@ -4,40 +4,43 @@ The goal of this tutorial is to be a complete guide for building a **secure, dat
 
 This tutorial builds up both the frontend & backend of the [survey.dev](https://survey.dev) website.
 
-At a high level, this tutorial uses React and Node (Express), with all the other tools listed in the Tools section below:
+At a high level, this tutorial uses React and Node (Express), with all the other tools listed in the first section below:
 
 ## Sections
 
 |     |                                                                          | Frontend | Backend |
-| --- | ------------------------------------------------------------------------ | :------: | :-----: |
-| 1.  | [Design goals](#design-goals)                                            |    ✓     |    ✓    |
-| 2.  | [Tools we will use](#tools)                                              |    ✓     |    ✓    |
-| 3.  | [Initial setup (Create React App)](#initial-setup-with-create-react-app) |    ✓     |         |
-| 4.  | [Add a JS library](#add-surveyjs)                                        |    ✓     |         |
-| 5.  | [Set up backend server (Express.js)](#set-up-backend-server)             |          |    ✓    |
-| 6.  | [Add a database connection](#add-a-database-connection)                  |          |    ✓    |
-| 7.  | [Testing](#testing)                                                      |          |    ✓    |
-| 8.  | [Save to the database](#save-a-survey-response-from-the-frontend)        |    ✓     |    ✓    |
-| 9.  | [Signup & login](#signup-and-login)                                      |    ✓     |         |
-| 10. | [Send a JWT with the request](#send-a-jwt-with-the-request)              |    ✓     |         |
-| 11. | [Verify the JWT access token](#verify-the-jwt-access-token)              |          |    ✓    |
-| 12. | [Add a protected route](#add-a-protected-route)                          |    ✓     |    ✓    |
-| 13. | [Notes on deployment](#notes-on-deployment)                              |    ✓     |    ✓    |
+| --: | ------------------------------------------------------------------------ | :------: | :-----: |
+|   1 | [Design & tools](#design-and-tools)                                      |    ✓     |    ✓    |
+|   2 | [Initial setup (Create React App)](#initial-setup-with-create-react-app) |    ✓     |         |
+|   3 | [Add routing, styling, and survey](#add-routing-styling-and-survey)      |    ✓     |         |
+|   4 | [Set up backend server (Express.js)](#set-up-backend-server)             |          |    ✓    |
+|   5 | [Add a database connection](#add-a-database-connection)                  |          |    ✓    |
+|   6 | [Testing](#testing)                                                      |          |    ✓    |
+|   7 | [Save to the database](#save-a-survey-response-from-the-frontend)        |    ✓     |    ✓    |
+|   8 | [Signup & login](#signup-and-login)                                      |    ✓     |         |
+|   9 | [Send a JWT with the request](#send-a-jwt-with-the-request)              |    ✓     |         |
+|  10 | [Verify the JWT access token](#verify-the-jwt-access-token)              |          |    ✓    |
+|  11 | [Add a protected route](#add-a-protected-route)                          |    ✓     |    ✓    |
+|  12 | [Notes on deployment](#notes-on-deployment)                              |    ✓     |    ✓    |
 
 ---
 
 ### 1.
 
-## Design goals
+## Design and tools
 
-### Layout
+### Site layout
 
 We want to build a site with the following pages:
 
-- **Landing page** - Give some information about the website.
-- **Survey page** - Allow a user to submit their survey.
-- **Results page** - Allow authorized users to view the survey results.
-- **Auth pages** - Allow users to sign up, log in, and reset their password.
+| Route                   | Page         | Purpose                                                   |
+| ----------------------- | ------------ | --------------------------------------------------------- |
+| /                       | Landing page | Give some information about the website.                  |
+| /survey                 | Survey page  | Allow a user to submit their survey.                      |
+| /results                | Survey page  | Allow authorized users to view the survey results.        |
+| /signup, /login, /reset | Auth pages   | Allow users to sign up, log in, and reset their password. |
+
+The pages will roughly look like the following:
 
 ![Website design](https://res.cloudinary.com/component/image/upload/v1606931058/permanent/survey-dev-design.png)
 
@@ -49,44 +52,46 @@ The frontend will communicate with the backend by making API requests using JSON
 
 For this tutorial, the frontend and backend code will live in the same codebase. However, we could also choose to keep them completely separate from each other if we wanted.
 
+### API routes
+
+Our frontend will send to the following endpoints to save and display survey data:
+
+| Route                  | Purpose                                                                   |
+| ---------------------- | ------------------------------------------------------------------------- |
+| POST /survey-responses | Receive survey data and save it to the database.                          |
+| GET /survey-responses  | Return a user's survey response if they have already answered the survey. |
+| GET /results           | Return the results of all survey responses.                               |
+| GET /status            | Return "ok" if the server is running.                                     |
+
+### Tools
+
+We will use the following tools:
+
+|                                                                                                                                                                                                        | Tool         | Purpose                            | Frontend | Backend |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ | ---------------------------------- | :------: | :-----: |
+| <a href="https://reactjs.org/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                       | React        | User interface builder             |    ✓     |         |
+| <a href="https://reactjs.org/docs/react-dom.html" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>    | React DOM    | Renders React in the browser       |    ✓     |         |
+| <a href="https://reactrouter.com/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                   | React router | Client-side routing                |    ✓     |         |
+| <a href="https://surveyjs.io/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                       | SurveyJS     | Submit and display surveys         |    ✓     |         |
+| <a href="https://github.com/axios/axios" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>             | Axios        | Make API requests                  |    ✓     |         |
+| <a href="https://userfront.com/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                     | Userfront    | Authentication                     |    ✓     |    ✓    |
+| <a href="https://nodejs.org/en/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                     | Node         | JavaScript runtime                 |          |    ✓    |
+| <a href="https://expressjs.com/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                     | Express.js   | Web server framework               |          |    ✓    |
+| <a href="https://www.postgresql.org/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                | Postgres     | Database                           |          |    ✓    |
+| <a href="https://sequelize.org/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                     | Sequelize    | ORM (helps write database queries) |          |    ✓    |
+| <a href="https://github.com/motdotla/dotenv" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>         | dotenv       | Manage environment variables       |          |    ✓    |
+| <a href="https://github.com/auth0/node-jsonwebtoken" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a> | jsonwebtoken | Verify & decode auth tokens        |          |    ✓    |
+| <a href="https://jestjs.io/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                         | Jest         | Testing                            |          |    ✓    |
+
 ---
 
 ### 2.
 
-## Tools
-
-We will use the following tools:
-
-### Frontend
-
-|                                                                                                                                                                                                     | Tool         | Purpose                      |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ---------------------------- |
-| <a href="https://reactjs.org/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                    | React        | User interface builder       |
-| <a href="https://reactjs.org/docs/react-dom.html" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a> | React DOM    | Renders React in the browser |
-| <a href="https://reactrouter.com/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                | React router | Client-side routing          |
-| <a href="https://surveyjs.io/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                    | SurveyJS     | Submit and display surveys   |
-| <a href="https://github.com/axios/axios" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>          | Axios        | Make API requests            |
-| <a href="https://userfront.com/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                  | Userfront    | Authentication               |
-
-### Backend
-
-|                                                                                                                                                                                                        | Tool         | Purpose                            |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ | ---------------------------------- |
-| <a href="https://nodejs.org/en/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                     | Node         | JavaScript runtime                 |
-| <a href="https://expressjs.com/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                     | Express.js   | Web server framework               |
-| <a href="https://www.postgresql.org/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                | Postgres     | Database                           |
-| <a href="https://sequelize.org/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                     | Sequelize    | ORM (helps write database queries) |
-| <a href="https://github.com/motdotla/dotenv" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>         | dotenv       | Manage environment variables       |
-| <a href="https://github.com/auth0/node-jsonwebtoken" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a> | jsonwebtoken | Verify & decode auth tokens        |
-| <a href="https://jestjs.io/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                         | Jest         | Testing                            |
-
----
-
-### 3.
-
 ## Initial setup with Create React App
 
-https://create-react-app.dev/docs/getting-started/
+React is a great frontend tool, but it's a bit of a hassle to set up from scratch. Because of this, we'll use Create React App to get up and running quickly.
+
+Follow the Quick Start instructions for Create React App (https://create-react-app.dev/docs/getting-started/). In your terminal, enter:
 
 ```
 npx create-react-app survey-dev
@@ -94,74 +99,313 @@ cd survey-dev
 npm start
 ```
 
+After installing and running, your quickstart site should be viewable at `http://localhost:3000`
+
 ![Create React App](https://res.cloudinary.com/component/image/upload/v1603496124/permanent/survey-tutorial-0.png)
+
+Like the message says, we can now edit our `App.js` file to start working.
 
 ---
 
-### 4.
+### 3.
 
-## Add SurveyJS
+## Add routing, styling, and survey
 
-https://surveyjs.io/Documentation/Library
+We want to render different views for each path (`/survey`, `/results`, etc) without reloading the page each time, so we'll use React Router to handle our client-side routing.
+
+### Add React Router
+
+Install React Router and save it to our `package.json` file.
 
 ```
-npm install survey-react --save
+npm install react-router-dom --save-dev
 ```
 
-Add questions.js
-
-Update App.js
+With this installed, we can update `src/App.js` for a basic application with routing:
 
 ```js
-// App.js
+// src/App.js
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  NavLink,
+} from "react-router-dom";
+
+function App() {
+  return (
+    <Router>
+      <div>
+        <nav className="navbar navbar-expand bg-white py-4 shadow">
+          <div className="container">
+            <NavLink exact to="/" className="btn btn-outline-primary mr-4">
+              survey.dev
+            </NavLink>
+
+            <ul className="navbar-nav mr-auto">
+              <li className="nav-item">
+                <NavLink to="/survey" className="nav-link">
+                  Survey
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink to="/results" className="nav-link">
+                  Results
+                </NavLink>
+              </li>
+            </ul>
+            <AuthButtons />
+          </div>
+        </nav>
+
+        <div>
+          <Switch>
+            <Route path="/results">
+              <Results />
+            </Route>
+            <Route path="/survey">
+              <Survey />
+            </Route>
+            <Route path="/login">
+              <Login />
+            </Route>
+            <Route path="/signup">
+              <Signup />
+            </Route>
+            <Route path="/">
+              <Landing />
+            </Route>
+          </Switch>
+        </div>
+      </div>
+    </Router>
+  );
+}
+
+export default App;
+
+function Landing() {
+  return <div className="container">Landing</div>;
+}
+
+function Survey() {
+  return <div className="container">Survey</div>;
+}
+
+function Results() {
+  return <div className="container">Results</div>;
+}
+
+function Signup() {
+  return <div className="container">Signup</div>;
+}
+
+function Login() {
+  return <div className="container">Login</div>;
+}
+
+function AuthButtons() {
+  return (
+    <ul className="navbar-nav ml-auto">
+      <li className="nav-item">
+        <NavLink to="/login" className="nav-link">
+          Login
+        </NavLink>
+      </li>
+      <li className="nav-item">
+        <NavLink to="/signup" className="nav-link">
+          Signup
+        </NavLink>
+      </li>
+    </ul>
+  );
+}
+```
+
+If you're unfamiliar with React or React Router, take a moment to look at the file and get a sense for how it works.
+
+The `<Router>` tag scopes everything for React Router, while the `<Switch>` tag contains all the `<Route>` tags that can be visited.
+
+Whenever a user visits a route that corresponds to one of these tags (e.g. `path="/survey"`), React Router will render the corresponding component (e.g. `<Survey />`)
+
+### Add Bootstrap styling
+
+The styling for our `App.js` file doesn't look very good, so we can use the Bootstrap 4 stylesheet. Add it inside the `<head>` tag in `public/index.html`
+
+```html
+<!-- Add in the <head> of public/index.html -->
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+  integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2"
+  crossorigin="anonymous"
+/>
+```
+
+Now when you run your server with `npm start`, you should have a basic application at `http://localhost:3000`:
+
+![React Router](https://res.cloudinary.com/component/image/upload/v1606952665/permanent/survey-dev-0.gif)
+
+### Add SurveyJS
+
+Let's work on the `/survey` page first, since that's a main feature of the application. We'll use SurveyJS, which has a library for React: https://surveyjs.io/Documentation/Library.
+
+```
+npm install survey-react --save-dev
+```
+
+SurveyJS renders a nice-looking survey form based on a JSON object with questions in it.
+
+Start by creating a `questions.js` file inside the `src/` directory. You can update these questions to whatever you want, based on the [SurveyJS docs](https://surveyjs.io/Examples/Library?id=questiontype-text&platform=Reactjs&theme=modern).
+
+```js
+// src/questions.js
+const questions = {
+  title: "What technologies do you use?",
+  pages: [
+    {
+      name: "Page 1",
+      questions: [
+        {
+          name: "frameworkUsing",
+          title: "Do you use any front-end framework?",
+          type: "radiogroup",
+          choices: ["Yes", "No"],
+          isRequired: true,
+        },
+        {
+          name: "framework",
+          title: "What front-end framework do you use?",
+          type: "checkbox",
+          choices: ["React", "Vue", "Angular", "jQuery"],
+          hasOther: true,
+          isRequired: true,
+          visibleIf: "{frameworkUsing} = 'Yes'",
+        },
+      ],
+    },
+    {
+      name: "Page 2",
+      questions: [
+        {
+          type: "comment",
+          name: "about",
+          title: "Please tell us about your experience",
+        },
+      ],
+    },
+  ],
+};
+
+export default questions;
+```
+
+With the questions in place, we can update `src/App.js` to show the survey.
+
+Add the required `import` statements for SurveyJS and the questions, and then update the `Survey` method near the bottom to include the `<SurveyJS.Survey />` element.
+
+```js
+// src/App.js
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  NavLink,
+} from "react-router-dom";
+
 import * as SurveyJS from "survey-react";
 import "survey-react/modern.css";
 import questions from "./questions.js";
 
 SurveyJS.StylesManager.applyTheme("modern");
 const survey = new SurveyJS.Model(questions);
-survey.onComplete.add(function (result) {
+survey.onComplete.add((result) => {
   console.log(result.data);
 });
 
-function App() {
+// ...
+
+function Survey() {
   return (
-    <div className="App">
+    <div className="container">
       <SurveyJS.Survey model={survey} />
     </div>
   );
 }
 
-export default App;
+// ...
 ```
+
+Now when we visit `http://localhost:3000/survey`, we should see our questions rendered nicely:
+
+![SurveyJS result](https://res.cloudinary.com/component/image/upload/v1606953919/permanent/survey-0.png)
+
+Right now, if we complete the survey, it logs the resulting data to the console because of the line:
+
+```js
+survey.onComplete.add((result) => {
+  console.log(result.data);
+});
+```
+
+We'll want to send this data to our backend API instead so that it can be saved.
+
+Let's go ahead and set up the backend.
 
 ---
 
-### 5.
+### 4.
 
 ## Set up backend server
 
+We could make a separate repo for the backend since it will be completely separate, but instead we will keep it under one repo and put the backend files in their own folder.
+
+### Add Express.js
+
+Start by installing express into the project:
+
 ```
 npm install express --save
-touch server.js
 ```
+
+If you have trouble installing, check out the [Express.js docs](https://expressjs.com/).
+
+Remember that we want the following routes:
+
+| Route                  | Purpose                                                                   |
+| ---------------------- | ------------------------------------------------------------------------- |
+| POST /survey-responses | Receive survey data and save it to the database.                          |
+| GET /survey-responses  | Return a user's survey response if they have already answered the survey. |
+| GET /results           | Return the results of all survey responses.                               |
+| GET /status            | Return "ok" if the server is running.                                     |
+
+Create a file named `server.js` at the top level of the project.
 
 ```js
 // server.js
 const express = require("express");
 const bodyParser = require("body-parser");
-const path = require("path");
 const app = express();
-app.use(express.static(path.join(__dirname, "build")));
+app.use(bodyParser.json());
 
-app.all("/survey-responses", function (req, res, next) {
+app.all(["/survey-responses", "/results"], (req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Content-Type");
   next();
 });
 
-app.get("/survey-responses", function (req, res) {
+app.post("/survey-responses", async (req, res) => {
   return res.send("Coming soon");
+});
+
+app.get("/survey-responses", async (req, res) => {
+  return res.send("Coming soon");
+});
+
+app.get("/results", async (req, res) => {
+  return res.send("Results");
 });
 
 app.get("/status", async (req, res) => {
@@ -176,34 +420,36 @@ const server = app.listen(port, () =>
 module.exports = server;
 ```
 
-Add to package.json:
+If you haven't ever used Express, take a moment to study the `server.js` file to see how it works.
 
-```json
-"proxy": "http://localhost:5000"
-```
+The `app.all` block is added to include headers for CORS, so that the browser does not reject incoming requests.
 
-We also want our backend server to automatically reload any changes we make, and we can use `nodemon` to accomplish this during development.
+Each route is then registered with `app.post` or `app.get`, and each route sends a response based on what is returned with `res.send()`. Finally, the server listens on port 5000.
+
+### Run the server
+
+We want our backend server to automatically reload any changes we make, and we can use `nodemon` to accomplish this during development.
 
 ```
 npm install nodemon --save-dev
 ```
 
-Now in one terminal, you can run `npm run serve` to start the frontend on localhost:3000. In another terminal you can run `nodemon server.js` to start the backend on localhost:5000.
+Now in one terminal tab, you can run `npm run serve` to start the frontend on `localhost:3000`.
 
-With both of these running, visiting http://localhost:3000 should show the survey, and visiting http://localhost:5000/survey-responses should return "Coming soon".
+In another terminal tab you can run `nodemon server.js` to start the backend on `localhost:5000`.
 
-### A note about servers
+| Command             | Server                      | Location              |
+| ------------------- | --------------------------- | --------------------- |
+| `npm run serve`     | Frontend (Create React App) | http://localhost:3000 |
+| `nodemon server.js` | Backend (Express.js)        | http://localhost:5000 |
 
-At this point, we have 2 servers running locally:
+With the backend process running, visiting http://localhost:5000/survey-responses should return "Coming soon".
 
-| Location              | Tech             | Command           | Purpose                                          |
-| --------------------- | ---------------- | ----------------- | ------------------------------------------------ |
-| http://localhost:3000 | Create React App | npm start         | Serve the hot-reloaded React files.              |
-| http://localhost:5000 | Express.js       | nodemon server.js | Receive API requests and interact with database. |
+![Express.js route](https://res.cloudinary.com/component/image/upload/v1606956074/permanent/survey-api-0.png)
 
 ---
 
-### 6.
+### 5.
 
 ## Add a database connection
 
@@ -515,7 +761,7 @@ Now when we visit `http://localhost:5000/survey-responses` in the browser, it wi
 
 ---
 
-### 7.
+### 6.
 
 ## Testing
 
@@ -778,7 +1024,7 @@ Now our tests are passing because the route creates a `surveyResponse` record an
 
 ---
 
-### 8.
+### 7.
 
 ## Save a survey response from the frontend
 
@@ -818,27 +1064,9 @@ export default App;
 
 Now when we submit a survey response from the frontend, it is saved to the database on the backend.
 
-### React router
-
-```
-npm i react-router-dom --save
-```
-
-### Bootstrap nav
-
-```html
-<!-- Add in the <head> of public/index.html -->
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
-  integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2"
-  crossorigin="anonymous"
-/>
-```
-
 ---
 
-### 9.
+### 8.
 
 ## Signup and login
 
@@ -869,7 +1097,7 @@ In test mode, visit project settings and update "Login path" redirect
 
 ---
 
-### 10.
+### 9.
 
 ## Send a JWT with the request
 
@@ -915,7 +1143,7 @@ axios.post(
 
 ---
 
-### 11.
+### 10.
 
 ## Verify the JWT access token
 
@@ -1241,7 +1469,7 @@ Now submitting our survey when logged in should work.
 
 ---
 
-### 12.
+### 11.
 
 ## Add a protected route
 
@@ -1447,6 +1675,6 @@ function Survey() {
 
 ---
 
-### 13.
+### 12.
 
 ## Notes on deployment

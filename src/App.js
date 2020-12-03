@@ -49,11 +49,12 @@ function App() {
       <div>
         <nav className="navbar navbar-expand-lg bg-white py-4 shadow">
           <div className="container">
-            <NavLink exact to="/" className="btn btn-outline-primary mr-4">
-              survey.dev
-            </NavLink>
-
             <ul className="navbar-nav mr-auto">
+              <li className="nav-item">
+                <NavLink exact to="/" className="btn btn-outline-primary mr-4">
+                  survey.dev
+                </NavLink>
+              </li>
               <li className="nav-item">
                 <NavLink to="/survey" className="nav-link">
                   Survey
