@@ -6,11 +6,9 @@ This tutorial builds up both the frontend & backend of the [survey.dev](https://
 
 At a high level, this tutorial uses React and Node (Express), with all the other tools listed in the first section below:
 
-## Sections
-
-|     |                                                                          | Frontend | Backend |
+|     | Table of contents                                                        | Frontend | Backend |
 | --: | ------------------------------------------------------------------------ | :------: | :-----: |
-|   1 | [Design & tools](#design-and-tools)                                      |    ✓     |    ✓    |
+|   1 | [Tools & design](#tools-and-design)                                      |    ✓     |    ✓    |
 |   2 | [Initial setup (Create React App)](#initial-setup-with-create-react-app) |    ✓     |         |
 |   3 | [Add routing, styling, and survey](#add-routing-styling-and-survey)      |    ✓     |         |
 |   4 | [Set up backend server (Express.js)](#set-up-backend-server)             |          |    ✓    |
@@ -27,7 +25,32 @@ At a high level, this tutorial uses React and Node (Express), with all the other
 
 ### 1.
 
-## Design and tools
+## Tools and design
+
+We will use the following tools:
+
+#### Frontend
+
+|                                                                                                                                                                                                     | Tool         | Purpose                         |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ------------------------------- |
+| <a href="https://reactjs.org/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                    | React        | User interface builder          |
+| <a href="https://reactjs.org/docs/react-dom.html" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a> | React DOM    | Renders React in the browser    |
+| <a href="https://reactrouter.com/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                | React router | Client-side routing             |
+| <a href="https://surveyjs.io/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                    | SurveyJS     | Submit and display surveys      |
+| <a href="https://github.com/axios/axios" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>          | Axios        | Make API requests               |
+| <a href="https://userfront.com/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                  | Userfront    | Authentication & access control |
+
+**Backend**
+
+|                                                                                                                                                                                                        | Tool         | Purpose                            |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ | ---------------------------------- |
+| <a href="https://nodejs.org/en/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                     | Node         | JavaScript runtime                 |
+| <a href="https://expressjs.com/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                     | Express.js   | Web server framework               |
+| <a href="https://www.postgresql.org/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                | Postgres     | Database                           |
+| <a href="https://sequelize.org/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                     | Sequelize    | ORM (helps write database queries) |
+| <a href="https://github.com/motdotla/dotenv" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>         | dotenv       | Manage environment variables       |
+| <a href="https://github.com/auth0/node-jsonwebtoken" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a> | jsonwebtoken | Verify & decode auth tokens        |
+| <a href="https://jestjs.io/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                         | Jest         | Testing                            |
 
 ### Site layout
 
@@ -62,26 +85,6 @@ Our frontend will send to the following endpoints to save and display survey dat
 | GET /survey-responses  | Return a user's survey response if they have already answered the survey. |
 | GET /results           | Return the results of all survey responses.                               |
 | GET /status            | Return "ok" if the server is running.                                     |
-
-### Tools
-
-We will use the following tools:
-
-|                                                                                                                                                                                                        | Tool         | Purpose                            | Frontend | Backend |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------ | ---------------------------------- | :------: | :-----: |
-| <a href="https://reactjs.org/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                       | React        | User interface builder             |    ✓     |         |
-| <a href="https://reactjs.org/docs/react-dom.html" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>    | React DOM    | Renders React in the browser       |    ✓     |         |
-| <a href="https://reactrouter.com/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                   | React router | Client-side routing                |    ✓     |         |
-| <a href="https://surveyjs.io/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                       | SurveyJS     | Submit and display surveys         |    ✓     |         |
-| <a href="https://github.com/axios/axios" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>             | Axios        | Make API requests                  |    ✓     |         |
-| <a href="https://userfront.com/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                     | Userfront    | Authentication                     |    ✓     |    ✓    |
-| <a href="https://nodejs.org/en/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                     | Node         | JavaScript runtime                 |          |    ✓    |
-| <a href="https://expressjs.com/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                     | Express.js   | Web server framework               |          |    ✓    |
-| <a href="https://www.postgresql.org/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                | Postgres     | Database                           |          |    ✓    |
-| <a href="https://sequelize.org/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                     | Sequelize    | ORM (helps write database queries) |          |    ✓    |
-| <a href="https://github.com/motdotla/dotenv" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>         | dotenv       | Manage environment variables       |          |    ✓    |
-| <a href="https://github.com/auth0/node-jsonwebtoken" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a> | jsonwebtoken | Verify & decode auth tokens        |          |    ✓    |
-| <a href="https://jestjs.io/" target="_blank"><img src="https://simple.wikipedia.org/w/skins/Vector/resources/skins.vector.styles/images/external-link-ltr-icon.svg?b4b84"></a>                         | Jest         | Testing                            |          |    ✓    |
 
 ---
 
