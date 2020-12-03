@@ -6,13 +6,13 @@ This tutorial builds up both the frontend & backend of the [survey.dev](https://
 
 At a high level, this tutorial uses the following tools:
 
-| Frontend                                                                                |     | Backend                                                                                    |
-| :-------------------------------------------------------------------------------------- | --- | :----------------------------------------------------------------------------------------- |
-| [React](https://reactjs.org/) <br> <small>User interface builder</small>                |     | [Node](https://nodejs.org/) <br > <small>JavaScript runtime</small>                        |
-| [React Router](https://reactrouter.com/) <br> <small>Client-side routing</small>        |     | [Express.js](https://expressjs.com/) <br> <small>Web server framework</small>              |
-| [SurveyJS](https://surveyjs.io/) <br> <small>Submit and display surveys</small>         |     | [Postgres](https://www.postgresql.org/) <br> <small>Database</small>                       |
-| [Axios](https://github.com/axios/axios) <br> <small>Make API requests</small>           |     | [Sequelize](https://sequelize.org/) <br> <small>ORM (helps write database queries)</small> |
-| [Userfront](https://userfront.com/) <br> <small>Authentication & access control</small> |     | [Jest](https://jestjs.io/) <br> <small>Testing</small>                                     |
+| Frontend                                                                 |     | Backend                                                                     |
+| :----------------------------------------------------------------------- | --- | :-------------------------------------------------------------------------- |
+| [React](https://reactjs.org/) <br> User interface builder                |     | [Node](https://nodejs.org/) <br > JavaScript runtime                        |
+| [React Router](https://reactrouter.com/) <br> Client-side routing        |     | [Express.js](https://expressjs.com/) <br> Web server framework              |
+| [SurveyJS](https://surveyjs.io/) <br> Submit and display surveys         |     | [Postgres](https://www.postgresql.org/) <br> Database                       |
+| [Axios](https://github.com/axios/axios) <br> Make API requests           |     | [Sequelize](https://sequelize.org/) <br> ORM (helps write database queries) |
+| [Userfront](https://userfront.com/) <br> Authentication & access control |     | [Jest](https://jestjs.io/) <br> Testing                                     |
 
 ### Table of contents
 
