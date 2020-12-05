@@ -16,22 +16,22 @@ At a high level, this tutorial uses the following tools:
 
 ### Table of contents
 
-The tutorial will follow an outline similar to building from scratch:
+The tutorial will build a site from scratch in the following order:
 
-|     | Section                                                                  | Frontend | Backend |
-| --: | :----------------------------------------------------------------------- | :------: | :-----: |
-|  1. | [Design](#design)                                                        |    ✓     |    ✓    |
-|  2. | [Initial setup (Create React App)](#initial-setup-with-create-react-app) |    ✓     |         |
-|  3. | [Add routing, styling, and survey](#add-routing-styling-and-survey)      |    ✓     |         |
-|  4. | [Set up backend server (Express.js)](#set-up-backend-server)             |          |    ✓    |
-|  5. | [Add a database connection](#add-a-database-connection)                  |          |    ✓    |
-|  6. | [Testing](#testing)                                                      |          |    ✓    |
-|  7. | [Save to the database](#save-a-survey-response-from-the-frontend)        |    ✓     |    ✓    |
-|  8. | [Signup & login](#signup-and-login)                                      |    ✓     |         |
-|  9. | [Send a JWT with the request](#send-a-jwt-with-the-request)              |    ✓     |         |
-| 10. | [Verify the JWT access token](#verify-the-jwt-access-token)              |          |    ✓    |
-| 11. | [Add a protected route](#add-a-protected-route)                          |    ✓     |    ✓    |
-| 12. | [Notes on deployment](#notes-on-deployment)                              |    ✓     |    ✓    |
+|     | Section                                                                           |
+| --: | :-------------------------------------------------------------------------------- |
+|  1. | [Site & API design](#design)                                                      |
+|  2. | [Initial frontend setup (Create React App)](#initial-setup-with-create-react-app) |
+|  3. | [Add routing, styling, and survey to frontend](#add-routing-styling-and-survey)   |
+|  4. | [Initial backend setup (Express.js)](#set-up-backend-server)                      |
+|  5. | [Add a database connection](#add-a-database-connection)                           |
+|  6. | [Add testing to the backend](#testing)                                            |
+|  7. | [Save submitted data to the database](#save-a-survey-response-from-the-frontend)  |
+|  8. | [Add signup, login, and password reset](#signup-login-and-password-reset)         |
+|  9. | [Send a JWT with the request](#send-a-jwt-with-the-request)                       |
+| 10. | [Verify the JWT access token](#verify-the-jwt-access-token)                       |
+| 11. | [Add a protected route](#add-a-protected-route)                                   |
+| 12. | [Deploy to production](#notes-on-deployment)                                      |
 
 ---
 
@@ -93,7 +93,7 @@ After installing and running, your quickstart site should be viewable at `http:/
 
 ![Create React App](https://res.cloudinary.com/component/image/upload/v1603496124/permanent/survey-tutorial-0.png)
 
-Like the message says, we can now edit our `App.js` file to start working.
+Like the message says, we can now edit our `src/App.js` file to start working.
 
 ---
 
@@ -115,6 +115,7 @@ With this installed, we can update `src/App.js` for a basic application with rou
 
 ```js
 // src/App.js
+
 import React from "react";
 import {
   BrowserRouter as Router,
@@ -251,6 +252,7 @@ Start by creating a `questions.js` file inside the `src/` directory. You can upd
 
 ```js
 // src/questions.js
+
 const questions = {
   title: "What technologies do you use?",
   pages: [
@@ -297,6 +299,7 @@ Add the required `import` statements for SurveyJS and the questions, and then up
 
 ```js
 // src/App.js
+
 import React from "react";
 import {
   BrowserRouter as Router,
@@ -375,6 +378,7 @@ Create a file named `server.js` at the top level of the project.
 
 ```js
 // server.js
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const app = express();
@@ -443,9 +447,9 @@ With the backend process running, visiting http://localhost:5000/survey-response
 
 ## Add a database connection
 
-Will be using Sequelize to connect to a Postgres database instance.
+We will use [PostgreSQL](https://www.postgresql.org/) ("Postgres") for our database, along with an ORM called [Sequelize](https://sequelize.org/master/manual/getting-started.html) to help make our queries easier to read and write.
 
-https://sequelize.org/master/manual/getting-started.html
+Install Postgres, Sequelize, and the pg-hstore adapter into the project:
 
 ```
 npm install sequelize pg pg-hstore --save
@@ -453,154 +457,140 @@ npm install sequelize pg pg-hstore --save
 
 ### Create the database
 
-Download https://www.postgresql.org/download/
+If you don't already have Postgres on your computer, download and install it here: https://www.postgresql.org/download/. You will need this to run the database locally.
 
-Install `psql`
+Once you have Postgres installed, use either the Postgres app or `psql` to create 2 databases -- one named `survey_test` for testing and one named `survey_dev` for development.
+
+If you are using `psql` in your terminal, these are the commands:
 
 ```
 psql
-CREATE DATABASE survey_dev;
-CREATE DATABASE survey_test;
+create database survey_test;
+create database survey_dev;
 \q
 ```
 
-### Setup a .env file
+### Set up a .env file
 
-`npm install dotenv --save`
+We will be using different database details in different environments (testing, development, production).
+
+A standard way to manage different values across environments is by using a `.env` file. The npm package `dotenv` will help us implement this.
+
+Install the `dotenv` package, and also create a new folder called `/api` for our backend files. Add the `.env` file to this folder:
 
 ```
+npm install dotenv --save
 mkdir api
 touch api/.env
 ```
 
+The `api/.env` file will be used for the development environment by default, and we will modify the test environment to change the database name.
+
+For now, populate the `api/.env` file with the following attributes:
+
 ```
 # api/.env
-DATABASE_Name=survey_dev
+DATABASE_NAME=survey_dev
 DATABASE_USERNAME=postgres
 DATABASE_PASSWORD=null
 DATABASE_HOST=localhost
 DATABASE_DIALECT=postgres
-DATABASE_PORT=5431
+DATABASE_PORT=5432
 ```
 
-### Use this information to create DB connection instance
+When we run `dotenv`, it will assign each of these to a variable that will be available in our application as `process.env.DATABASE_NAME`, `process.env.DATABASE_USERNAME`, and so on.
+
+Note: if you created your database with different name, username, or password, use your values in the `api/.env` file instead.
+
+### Configure Sequelize
+
+Sequelize has 2 main features we want to use:
+
+- **Models** allow us to create functions that can create, update, and delete data easily.
+- **Migrations** allow us to run simple commands that keep the database schema consistent across different computers and environments.
+
+Create the folders `api/models` and `api/migrations` for our models and migrations, respectively. Then add a `.sequelizerc` file for setting up Sequelize and a `api/config/database.js` file for defining how it connects to the database:
 
 ```
-touch api/database/instance.js
+mkdir api/models
+mkdir api/migrations
+mkdir api/config
+
+touch .sequelizerc
+touch api/config/database.js
 ```
+
+Update the `.sequelizerc` file with the following details, which tell Sequelize where to find the config, models, and migrations:
 
 ```js
-// api/database/instance.js
-const { Sequelize } = require("sequelize");
-const db = {};
+// .sequelizerc
 
-const sequelize = new Sequelize(
-  process.env.DATABASE_NAME,
-  process.env.DATABASE_USERNAME,
-  process.env.DATABASE_PASSWORD,
-  {
-    dialect: process.env.DATABASE_DIALECT,
-    host: process.env.DATABASE_HOST || "localhost",
-    port: process.env.DATABASE_PORT || 5432,
-  }
-);
-
-db.Sequelize = Sequelize;
-db.sequelize = sequelize;
-
-module.exports = db;
-```
-
-### Import the database instance into server.js
-
-```js
-// server.js
-const express = require("express");
-const bodyParser = require("body-parser");
+require("dotenv").config({ path: "./api/.env" });
 const path = require("path");
-const app = express();
 
-// Set up sequelize
-const { sequelize } = require("./api/database/instance.js");
-
-app.all("/survey-responses", function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
-  next();
-});
-
-app.get("/survey-responses", async (req, res) => {
-  // Check the DB connection
-  await sequelize.authenticate();
-  return res.send("Coming soon");
-});
-
-app.get("/status", async (req, res) => {
-  return res.send("ok");
-});
-
-const port = process.env.PORT || 5000;
-const server = app.listen(port, () =>
-  console.log(`✅  Backend listening on port ${port}`)
-);
-
-module.exports = server;
+module.exports = {
+  config: path.resolve("api", "config/database.js"),
+  "models-path": path.resolve("api", "models"),
+  "migrations-path": path.resolve("api", "migrations"),
+};
 ```
 
-Now when we have the server running with:
+Update the config file `api/config/database.js` to include our environment variables for production and development:
 
+```js
+// api/config/database.js
+
+module.exports = {
+  production: {
+    database: process.env.DATABASE_NAME,
+    username: process.env.DATABASE_USERNAME,
+    password: process.env.DATABASE_PASSWORD,
+    host: process.env.DATABASE_HOST,
+    port: process.env.DATABASE_PORT,
+    dialect: process.env.DATABASE_DIALECT,
+  },
+  development: {
+    database: process.env.DATABASE_NAME,
+    username: process.env.DATABASE_USERNAME,
+    password: process.env.DATABASE_PASSWORD,
+    host: process.env.DATABASE_HOST,
+    port: process.env.DATABASE_PORT,
+    dialect: process.env.DATABASE_DIALECT,
+  },
+};
 ```
-nodemon server.js
-```
 
-And visit http://localhost:5000/survey-responses
+We are now ready to start using Sequelize.
 
-The terminal should initiate the database connection:
+### Use a migration to add a table to the database
 
-```
-Executing (default): SELECT 1+1 AS result
-```
+We can use [Sequelize-CLI](https://sequelize.org/master/manual/migrations.html) to create and run our migration files. These will keep our databases consistent across different environments and different machines.
 
-### Add a table to the database
-
-We will use Sequelize-CLI to add a table using migrations.
-
-https://sequelize.org/master/manual/migrations.html
+Install Sequelize-CLI into the project:
 
 ```
 npm install sequelize-cli --save-dev
 ```
 
-Add folders for the migrations and models
-
-```
-mkdir api/database/migrations
-mkdir api/models
-touch .sequelizerc
-touch api/database/migration.config.js
-```
-
-```js
-// .sequelizerc
-require("dotenv").config({ path: "./api/.env" });
-const path = require("path");
-
-module.exports = {
-  config: path.resolve("api", "database/migration.config.js"),
-  "models-path": path.resolve("api", "models"),
-  "migrations-path": path.resolve("api", "database/migrations"),
-};
-```
-
-Now we can create a migration that we will use to generate the database table
+Now we can create a migration to generate a database table:
 
 ```
 npx sequelize migration:create --name create-survey-response
 ```
 
-Update the file that was created in `api/database/migrations/...`
+This command created a file in the folder with a name like `api/database/migrations/20210101005858-create-survey-responses.js`.
+
+Our `SurveyResponses` table will have the following columns:
+
+|   id    | user_id | data | created_at | updated_at |
+| :-----: | :-----: | :--: | :--------: | :--------: |
+| integer | integer | JSON |    date    |    date    |
+
+Update the migration file so that it will create the `SurveyResponses` table with these columns when it runs:
 
 ```js
+// api/database/migrations/20210101005858-create-survey-responses.js
+
 "use strict";
 
 module.exports = {
@@ -629,7 +619,7 @@ module.exports = {
         type: Sequelize.DATE,
       },
     });
-    await queryInterface.addIndex("Responses", ["user_id"]);
+    await queryInterface.addIndex("SurveyResponses", ["user_id"]);
   },
 
   down: async (queryInterface, Sequelize) => {
@@ -638,22 +628,65 @@ module.exports = {
 };
 ```
 
-Run the migration
+Now run the migration with the following command:
 
 ```
 npx sequelize db:migrate
 ```
 
-This created our DB table. If we wanted to undo this step, we could run `npx sequelize db:migrate:undo` (if you do this, be sure to re-run the initial migration again).
+This created our `SurveyResponses` table in the `survey_dev` database with the columns and index we specified.
 
-### Create DB model
+You can verify the table was created in `psql` by using the `\d` command:
+
+```
+psql -d "survey_dev"
+\d
+
+# =>
+                   List of relations
+ Schema |          Name          |   Type   |  Owner
+--------+------------------------+----------+----------
+ public | SequelizeMeta          | table    | postgres
+ public | SurveyResponses        | table    | postgres
+ public | SurveyResponses_id_seq | sequence | postgres
+```
+
+You can verify the table schema in `psql` with `\d "SurveyResponses"`
+
+```
+\d "SurveyResponses"
+
+# =>
+                                     Table "public.SurveyResponses"
+   Column   |           Type           |                           Modifiers
+------------+--------------------------+----------------------------------------------------------------
+ id         | integer                  | not null default nextval('"SurveyResponses_id_seq"'::regclass)
+ user_id    | integer                  | not null
+ data       | json                     | default '{}'::json
+ created_at | timestamp with time zone | not null
+ updated_at | timestamp with time zone | not null
+Indexes:
+    "SurveyResponses_pkey" PRIMARY KEY, btree (id)
+    "survey_responses_user_id" btree (user_id)
+```
+
+Note: if we wanted to undo our migration, we could run `npx sequelize db:migrate:undo`, and this would remove the table. If you undo this migration, be sure to re-run it again before continuing.
+
+### Create a database model
+
+We created the `SurveyResponses` table in our database, and now we want to interact with it.
+
+To do this, we can create a model in Sequelize. Create a file called `api/models/survey-response.js`
 
 ```
 touch api/models/survey-response.js
 ```
 
+In this file, we can [define a basic Sequelize model](https://sequelize.org/master/manual/model-basics.html). This will let our server know how to interact with the `SurveyResponses` table. Add the following to the file:
+
 ```js
 // api/models/survey-response.js
+
 const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
@@ -683,16 +716,54 @@ module.exports = (sequelize) => {
 };
 ```
 
-Update our sequelize instance to automatically read any files in the /models directory
+This will allow us to use helper methods like:
 
 ```js
-// api/database/instance.js
+// Create a survey response
+SurveyResponse.create({
+  userId: 5,
+  data: {
+    question1: "answer1",
+    question2: "answer2",
+  },
+});
+
+// Find all survey responses for a user
+SurveyResponse.findAll({
+  where: {
+    userId: 5,
+  },
+});
+```
+
+For more methods, check out the [Sequelize docs](https://sequelize.org/master/manual/model-querying-basics.html#applying-where-clauses).
+
+### Connect the backend to the database
+
+Now that we have the database set up and a model in place, we can create a Sequelize instance for our server to use when interacting with the database.
+
+Create a file `api/config/sequelize.js`:
+
+```
+touch api/config/sequelize.js
+```
+
+This file will do the following:
+
+- Initialize a Sequelize instance, connected to the database with credentials from our `api/.env` file
+- Import and register all of our models
+- Export an object that our server can use to reference the Sequelize instance and its models
+
+```js
+// api/config/sequelize.js
+
 const fs = require("fs");
 const path = require("path");
 const modelsDirectory = path.join(__dirname, "../models");
 const { Sequelize } = require("sequelize");
 const db = {};
 
+// Initialize the Sequelize instance
 const sequelize = new Sequelize(
   process.env.DATABASE_NAME,
   process.env.DATABASE_USERNAME,
@@ -706,6 +777,7 @@ const sequelize = new Sequelize(
 
 db.modelNames = [];
 
+// Import and register all of the models in the /models directory
 fs.readdirSync(modelsDirectory)
   .filter((file) => {
     return file.indexOf(".") !== 0 && file.slice(-3) === ".js";
@@ -725,29 +797,104 @@ Object.keys(db).forEach((modelName) => {
   }
 });
 
+// Export a reference to the library (Sequelize) and the instance (sequelize)
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 module.exports = db;
 ```
 
-### Read from DB in a route
+### Add Sequelize to server.js
+
+Now we're ready to use our database with our server. We can import the Sequelize instance:
 
 ```js
-// Update server.js
+const { sequelize } = require("./api/config/sequelize.js");
+```
+
+and then use it in a route:
+
+```js
 app.get("/survey-responses", async (req, res) => {
   const surveyResponses = await sequelize.models.SurveyResponse.findAll();
   return res.send({ surveyResponses });
 });
 ```
 
-Now when we visit `http://localhost:5000/survey-responses` in the browser, it will read all the survey responses from the database and return them. Currently that is empty, so the response body looks like:
+The resulting file looks like:
+
+```js
+// server.js
+
+require("dotenv").config({ path: "./api/.env" });
+const express = require("express");
+const bodyParser = require("body-parser");
+const app = express();
+app.use(bodyParser.json());
+
+// Set up Sequelize
+const { sequelize } = require("./api/config/sequelize.js");
+
+app.all(["/survey-responses", "/results"], (req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  next();
+});
+
+app.post("/survey-responses", async (req, res) => {
+  return res.send("Coming soon");
+});
+
+// Return all survey responses
+app.get("/survey-responses", async (req, res) => {
+  const surveyResponses = await sequelize.models.SurveyResponse.findAll();
+  return res.send({ surveyResponses });
+});
+
+app.get("/results", async (req, res) => {
+  return res.send("Results");
+});
+
+app.get("/status", async (req, res) => {
+  return res.send("ok");
+});
+
+const port = process.env.PORT || 5000;
+const server = app.listen(port, () =>
+  console.log(`✅  Backend listening on port ${port}`)
+);
+
+module.exports = server;
+```
+
+Now when we have the server running with:
 
 ```
-{
-  surveyResponses: []
-}
+nodemon server.js
 ```
+
+And visit http://localhost:5000/survey-responses
+
+We get the following response:
+
+![Survey responses](https://res.cloudinary.com/component/image/upload/v1607109546/permanent/survey-api-1.png)
+
+You can check the logs in the terminal to see that the server did the following lookup:
+
+```
+Executing (default): SELECT "id", "user_id" AS "userId", "data", "created_at" AS "createdAt", "updated_at" AS "updatedAt" FROM "SurveyResponses" AS "SurveyResponse";
+```
+
+We can manually create a record in `psql` with the following command:
+
+```
+psql -d "server_dev"
+INSERT INTO "SurveyResponses" (user_id, data, created_at, updated_at) VALUES (99, '{}', now(), now());
+```
+
+Now reloading the page will show that survey response:
+
+![Survey responses](https://res.cloudinary.com/component/image/upload/v1607128554/permanent/survey-api-2.png)
 
 ---
 
@@ -755,21 +902,32 @@ Now when we visit `http://localhost:5000/survey-responses` in the browser, it wi
 
 ## Testing
 
-At this point, it will be easier to develop our backend API using tests, instead of doing guess-and-check in the browser over and over.
+At this point, it will be easier to develop our backend API using test-driven development, instead of doing guess-and-check in the browser over and over.
+
+### Test-driven development (TDD)
+
+In test-driven development (TDD), we write code that checks to see if our server is behaving the way we want it to behave. We intentionally write each test before writing the corresponding server code so that the test will fail initially -- this lets us know the test is "working". With the test in place, we then write the server code so that the test is satisfied. As more tests are written, this lets us continue moving quickly and changing our codebase without fear of accidentally breaking things.
+
+### Add Mocha and Chai
+
+[Mocha]() is a tool for running tests automatically, and [Chai]() is an assertion library that lets us write nice-looking statements like `expect(2+2).toEqual(4)`.
+
+Install `mocha` and `chai` as dev dependencies, and then create a `/test` folder with 3 files: one for configuring Mocha `mocha.config.js`; one for configuring our test environment (`test.config.js`); and one for the tests themselves (`survey-responses.crud.spec.js`). Mocha will automatically run files that end with `.spec.js` as tests.
 
 ```
-npm i mocha chai --save-dev
+npm install mocha chai --save-dev
 
 mkdir api/test
-touch api/test/test.config.js
 touch api/test/mocha.config.js
+touch api/test/test.config.js
 touch api/test/survey-responses.crud.spec.js
 ```
 
-Add to package.json
+We can configure npm to run our tests with a custom command. Update the `"scripts"` section of `package.json` to add `test-backend` and `test-backend:watch` as commands:
 
 ```json
 // package.json
+
 "scripts": {
   "start": "react-scripts start",
   "build": "react-scripts build",
@@ -777,20 +935,25 @@ Add to package.json
   "eject": "react-scripts eject",
   "test-backend": "NODE_ENV=test mocha ./api/test --exit",
   "test-backend:watch": "NODE_ENV=test mocha --watch ./api/test ./api --file ./api/test/mocha.config.js"
-}
+},
 ```
 
-Now in the terminal we can run:
+Now in the terminal we can run the test suite once, or run it each time a file is changed:
 
 | Command                      | Action                                             |
 | ---------------------------- | -------------------------------------------------- |
 | `npm run test-backend`       | Run the API test suite one time.                   |
 | `npm run test-backend:watch` | Run the API test suite whenever a file is changed. |
 
-Mocha will start up the server each time we run it, so we want to make sure to stop the server after the test suite runs.
+### Configure Mocha
+
+Mocha will start up the server each time we run the test suite, so we want to make sure to stop the server after the test suite runs.
+
+Update the Mocha configuration file to stop the server after each run:
 
 ```js
-// mocha.config.js
+// api/test/mocha.config.js
+
 const server = require("../../server.js");
 
 after(async () => {
@@ -802,12 +965,15 @@ after(async () => {
 });
 ```
 
+### Configure the test environment
+
 In the `test.config.js` file, we can define a `resetDb` helper function for our tests
 
 ```js
-// test.config.js
+// api/test/test.config.js
+
 process.env.DATABASE_NAME = "survey_test";
-const { sequelize, modelNames } = require("../database/instance.js");
+const { sequelize, modelNames } = require("../config/sequelize.js");
 
 const Test = {};
 
@@ -835,7 +1001,7 @@ const request = require("request");
 const chai = require("chai");
 const expect = chai.expect;
 const Test = require("./test.config.js");
-const { sequelize } = require("../database/instance.js");
+const { sequelize } = require("../config/sequelize.js");
 
 const uri = "http://localhost:3000";
 const req = request.defaults({
@@ -1058,7 +1224,7 @@ Now when we submit a survey response from the frontend, it is saved to the datab
 
 ### 8.
 
-## Signup and login
+## Signup, login, and password reset
 
 Create an account at https://userfront.com
 
