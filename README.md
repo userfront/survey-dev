@@ -947,7 +947,7 @@ Now in the terminal we can run the test suite once, or run it each time a file i
 
 ### Configure Mocha
 
-Mocha will start up the server each time we run the test suite, so we want to make sure to stop the server after the test suite runs.
+Mocha will start up the server each time we run the test suite, so we want to make sure to stop the server after the test suite runs. If we don't do this, we'll get an error saying that the server is already running.
 
 Update the Mocha configuration file to stop the server after each run:
 
@@ -967,7 +967,9 @@ after(async () => {
 
 ### Configure the test environment
 
-In the `test.config.js` file, we can define a `resetDb` helper function for our tests
+In addition to restarting the server, it's also nice to reset the test database each time our test suite runs. This will allow for easier debugging, and will also ensure our tests are consistent and that they are testing the things we expect.
+
+In the `test.config.js` file, we can define helper functions to reset a database table and to reset the whole database (all tables):
 
 ```js
 // api/test/test.config.js
@@ -982,7 +984,7 @@ const resetTable = (modelName) => {
   return sequelize.models[modelName].sync({ force: true, logging: false });
 };
 
-Test.resetDb = async () => {
+Test.resetAllTables = async () => {
   let deferreds = [];
   modelNames.map((name) => {
     deferreds.push(resetTable(name));
@@ -993,190 +995,213 @@ Test.resetDb = async () => {
 module.exports = Test;
 ```
 
-Now we can write our first test:
+### Write the first test
+
+With our test environment set up, let's write a test for one of our endpoints.
+
+The `POST /survey-responses` endpoint should create a record in the `SurveyResponses` table. So our test should do the following:
+
+1. Set up (reset) the database
+2. Send a `POST` request to `/survey-responses`
+3. Assert that a `SurveyResponse` was created correctly
+
+We already have all the tools in place for steps 1 & 3. For step 2, our test needs to make a POST request. [Axios](https://github.com/axios/axios) is a library for making API requests, so let's install that:
+
+```
+npm install axios --save
+```
+
+With `axios` installed, we can write our test:
 
 ```js
 // api/test/survey-responses.crud.spec.js
-const request = require("request");
+
+const axios = require("axios");
 const chai = require("chai");
 const expect = chai.expect;
 const Test = require("./test.config.js");
 const { sequelize } = require("../config/sequelize.js");
 
-const uri = "http://localhost:3000";
-const req = request.defaults({
-  json: true,
-  uri,
+const ax = axios.create({
+  baseURL: "http://localhost:5000",
 });
 
 describe("SurveyResponses endpoints", () => {
   before(async () => {
     // Reset the database before running these tests
-    await Test.resetDb();
+    await Test.resetAllTables();
     return Promise.resolve();
   });
 
-  it("GET /survey-responses should read all survey responses", async () => {
-    // Perform a GET request to /survey-responses
+  it("POST /survey-responses should create a survey response", async () => {
     const payload = {
-      uri: `${uri}/survey-responses`,
+      data: {
+        favoriteColor: "green",
+        technology: ["Vue", "Node.js"],
+      },
     };
-    const { res, body } = await new Promise((resolve) => {
-      req.get(payload, (err, res, body) => resolve({ res, body }));
-    });
+
+    // Perform a POST request to /survey-responses
+    const { data, status } = await ax.post("/survey-responses", payload);
 
     // Check that the server returns a 200 status code
-    expect(res.statusCode).to.equal(200);
+    expect(status).to.equal(200);
 
-    // Check that the body has a surveyResponse array
-    expect(body.surveyResponses).to.exist;
+    // Check that the surveyResponse is returned
+    expect(data.id).to.exist;
+    expect(data.userId).to.equal(88);
+    expect(data.data).to.deep.equal(payload.data);
 
-    // Check that the surveyResponses array has 3 survey responses in it
-    expect(body.surveyResponses.length).to.equal(3);
+    // Check that a surveyResponse was created in the database
+    const surveyResponse = await sequelize.models.SurveyResponse.findOne({
+      where: { id: data.id },
+    });
+    expect(surveyResponse).to.exist;
+    expect(surveyResponse.userId).to.equal(88);
+    expect(surveyResponse.data).to.deep.equal(payload.data);
+
+    return Promise.resolve();
+  });
+});
+```
+
+We've intentionally written this test to fail, so it should fail when we run it with
+
+```
+npm run test-backend:watch
+```
+
+![Test suite fails](https://res.cloudinary.com/component/image/upload/v1607394182/permanent/survey-test-0.png)
+
+The status is `200`, but right now our server does not create a `SurveyResponse`; it only returns `"Coming soon"`. This means the line that checks the response data:
+
+```js
+expect(data.id).to.exist;
+```
+
+will fail. This is good because it means our test is working. If we ever break something in the future, this test will catch it.
+
+### Create a survey response
+
+We can get our test passing by actually creating a `SurveyResponse` when the route is visited.
+
+In `server.js`, update the `POST /survey-responses` route to create a survey response based on the data from the request body:
+
+```js
+// server.js
+
+app.post("/survey-responses", async (req, res) => {
+  try {
+    const surveyResponse = await sequelize.models.SurveyResponse.create({
+      userId: 88,
+      data: req.body.data,
+    });
+    return res.send(surveyResponse);
+  } catch (err) {
+    return res.status(401).send("Unauthorized");
+  }
+});
+```
+
+With this change, the server will create a survey response whenever the `POST` route is visited, and for now it will use `userId: 88`.
+
+So now our test should be passing:
+
+![POST test passing](https://res.cloudinary.com/component/image/upload/v1607395087/permanent/survey-test-1.png)
+
+Note: visiting `http://localhost:5000/survey-responses` in the browser while running `nodemon server.js` will still show no survey responses. This is because the development server connects to the development database, not the test database.
+
+### Read all survey responses
+
+Similar to creating a survey response, we can implement a route to read all survey responses by first writing a failing test, and then writing the code to make it pass.
+
+Here we are creating 2 `SurveyResponse` records manually in the `before` block. Then in our test for `GET /survey-responses`, we check that there are 3 survey responses (2 created in the `before` block, and 1 created by the `POST` request from the other test):
+
+```js
+// api/test/surveyResponses.crud.spec.js
+
+const axios = require("axios");
+const chai = require("chai");
+const expect = chai.expect;
+const Test = require("./test.config.js");
+const { sequelize } = require("../config/sequelize.js");
+
+const ax = axios.create({
+  baseURL: "http://localhost:5000",
+});
+
+describe("SurveyResponses endpoints", () => {
+  before(async () => {
+    // Reset the database before running these tests
+    await Test.resetAllTables();
+
+    // Create 2 survey responses
+    await sequelize.models.SurveyResponse.create({
+      userId: 66,
+      data: {
+        favoriteColor: "red",
+        technology: ["Angular", "TypeScript"],
+      },
+    });
+    await sequelize.models.SurveyResponse.create({
+      userId: 77,
+      data: {
+        favoriteColor: "blue",
+        technology: ["React"],
+      },
+    });
+
+    return Promise.resolve();
+  });
+
+  it("POST /survey-responses should create a survey response", async () => {
+    // ...
+  });
+
+  it("GET /survey-responses should return all survey responses", async () => {
+    // Perform a GET request to /survey-responses
+    const { data, status } = await ax.get("/survey-responses");
+
+    // Check that the server returns a 200 status code
+    expect(status).to.equal(200);
+
+    // Check that the surveyResponse array has 3 surveyResponses in it
+    expect(data.surveyResponses).to.exist;
+    expect(data.surveyResponses.length).to.equal(3);
 
     // Check that the surveyResponses have the correct structure
-    const surveyResponse = body.surveyResponses[0];
+    const surveyResponse = data.surveyResponses[0];
+    expect(surveyResponse.userId).to.exist;
     expect(surveyResponse.data).to.exist;
     return Promise.resolve();
   });
 });
 ```
 
-We've intentionally written this test to fail; it is checking that there will be 3 survey responses, but we don't have any survey responses recorded yet.
-
-When we run the test suite with
-
-```
-npm run test-backend:watch
-```
-
-![Test suite fails](https://res.cloudinary.com/component/image/upload/v1603755834/permanent/survey-tutorial-test-0.png)
-
-This is good because it means our test is working. There are not 3 survey responses, so the test should fail.
-
-We can get the test passing by creating 3 survey responses in the `before` block of the test:
+This test actually passes, because we already wrote the following in `server.js`:
 
 ```js
-// api/test/survey-responses.crud.spec.js
-// Updated before block:
-before(async () => {
-  // Reset the database before running these tests
-  await Test.resetDb();
+// server.js
 
-  // Create 3 surveyResponses
-  await sequelize.models.SurveyResponse.create({
-    userId: 1,
-    data: { technology: ["JS", "React"] },
-  });
-  await sequelize.models.SurveyResponse.create({
-    userId: 2,
-    data: { technology: ["Java", "Spring", "VS Code"] },
-  });
-  await sequelize.models.SurveyResponse.create({
-    userId: 3,
-    data: { technology: ["MySql"] },
-  });
-  return Promise.resolve();
+app.get("/survey-responses", async (req, res) => {
+  const surveyResponses = await sequelize.models.SurveyResponse.findAll();
+  return res.send({ surveyResponses });
 });
 ```
 
-Now our test passes because 3 survey responses are returned.
-
-We can also verify that the `survey_test` database has those 3 survey responses as rows by using a tool like `Postico` (or any other postgres tool).
-
-![](https://res.cloudinary.com/component/image/upload/v1603756491/permanent/survey-tutorial-db-0.png)
-
-Visiting `http://localhost:5000/survey-responses` will still show no survey responses because when we run `nodemon server.js`, the application connects to the development database, not the test database.
-
-### Create a survey response
-
-We need our API to receive survey data from the frontend and save it in the database.
-
-We'll do this with
-
-`POST /survey-responses`
-
-And our data will be in the payload.
-
-We can start by adding a failing test:
+In an instance like this, where your test is passing because the application code already exists, it's a good idea to comment out the application code to verify that the test will fail without it. Try changing the `GET` route so that it will fail:
 
 ```js
-// Added to api/test/survey-responses.crud.spec.js
+// server.js
 
-it("POST /survey-responses should create a survey response", async () => {
-  const payload = {
-    uri: `${uri}/survey-responses`,
-    body: {
-      data: {
-        favoriteColor: "green",
-        technology: ["Vue", "Node.js"],
-      },
-    },
-  };
-
-  // Perform a POST request to /survey-responses
-  const { res, body } = await new Promise((resolve) => {
-    req.post(payload, (err, res, body) => resolve({ res, body }));
-  });
-
-  // Check that the server returns a 200 status code
-  expect(res.statusCode).to.equal(200);
-
-  // Check that the survey response is returned
-  expect(body.id).to.exist;
-  expect(body.data).to.deep.equal(payload.body.data);
-
-  // Check that a survey response was created in the database
-  const surveyResponse = await sequelize.models.SurveyResponse.findOne({
-    where: { id: body.id },
-  });
-  expect(surveyResponse).to.exist;
-  expect(surveyResponse.userId).to.equal(1);
-  expect(surveyResponse.data).to.deep.equal(payload.body.data);
-
-  return Promise.resolve();
+app.get("/survey-responses", async (req, res) => {
+  // const surveyResponses = await sequelize.models.SurveyResponse.findAll();
+  // return res.send({ surveyResponses });
+  return res.send("Coming soon");
 });
 ```
 
-This test initially fails with a `404` instead of returning a `200` status code here:
-
-```js
-expect(res.statusCode).to.equal(200);
-```
-
-because we haven't implemented our API endpoint yet.
-
-We can "fix" this by adding the route:
-
-```js
-// Added to server.js, immediately after app.get("/survey-responses", ...)
-app.post("/survey-responses", async (req, res) => {
-  return res.send("Hello");
-});
-```
-
-Now the test passes our `res.statusCode` check but fails on the next assertions because nothing is actually created.
-
-```js
-// Check that the survey response is returned
-expect(body.id).to.exist;
-expect(body.data).to.deep.equal(payload.body.data);
-```
-
-We can fix these by updating the route to actually create a `surveyResponse` record and return it:
-
-```js
-// Update the app.post block in server.js
-app.post("/survey-responses", async (req, res) => {
-  const surveyResponse = await sequelize.models.SurveyResponse.create({
-    userId: 1,
-    data: req.body.data,
-  });
-  return res.send(surveyResponse);
-});
-```
-
-Now our tests are passing because the route creates a `surveyResponse` record and then sends it back to the requestor.
+Once you've verified that the test will fail, you can restore the application code so that the test passes.
 
 ---
 
