@@ -27,7 +27,7 @@ The tutorial will build a site from scratch in the following order:
 |  5. | [Add a database connection](#add-a-database-connection)                           |
 |  6. | [Add testing to the backend](#testing)                                            |
 |  7. | [Save submitted data to the database](#save-a-survey-response-from-the-frontend)  |
-|  8. | [Add signup, login, and password reset](#signup-login-and-password-reset)         |
+|  8. | [Add signup, login, and logout](#signup-login-and-logout)                         |
 |  9. | [Send a JWT with the request](#send-a-jwt-with-the-request)                       |
 | 10. | [Verify the JWT access token](#verify-the-jwt-access-token)                       |
 | 11. | [Add a protected route](#add-a-protected-route)                                   |
@@ -639,7 +639,7 @@ This created our `SurveyResponses` table in the `survey_dev` database with the c
 You can verify the table was created in `psql` by using the `\d` command:
 
 ```
-psql -d "survey_dev"
+psql survey_dev
 \d
 
 # =>
@@ -888,7 +888,7 @@ Executing (default): SELECT "id", "user_id" AS "userId", "data", "created_at" AS
 We can manually create a record in `psql` with the following command:
 
 ```
-psql -d "server_dev"
+psql survey_dev
 INSERT INTO "SurveyResponses" (user_id, data, created_at, updated_at) VALUES (99, '{}', now(), now());
 ```
 
@@ -1105,7 +1105,11 @@ app.post("/survey-responses", async (req, res) => {
 
 With this change, the server will create a survey response whenever the `POST` route is visited, and for now it will use `userId: 88`.
 
-So now our test should be passing:
+Now our test should be passing:
+
+```
+npm run test-backend:watch
+```
 
 ![POST test passing](https://res.cloudinary.com/component/image/upload/v1607395087/permanent/survey-test-1.png)
 
@@ -1178,7 +1182,7 @@ describe("SurveyResponses endpoints", () => {
 });
 ```
 
-This test actually passes, because we already wrote the following in `server.js`:
+This test actually passes because we already wrote the following in `server.js`:
 
 ```js
 // server.js
@@ -1209,72 +1213,233 @@ Once you've verified that the test will fail, you can restore the application co
 
 ## Save a survey response from the frontend
 
-Our backend is set up to receive and save a survey response when we `POST` to `/survey-responses`, so we can make our frontend do that.
+Our backend is set up to receive and save a survey response when a `POST` request is sent to `/survey-responses`, so we can make our frontend do that when a survey is submitted.
 
-```
-npm install axios --save-dev
-```
+We'll use [Axios](https://github.com/axios/axios) on the frontend to make API requests too.
+
+Import `axios` at the beginning of `src/App.js`, and then update the `survey.onComplete` method to send a `POST` request instead of `console.log`. The beginning of the file should now look like this:
 
 ```js
 // src/App.js
-// Add axios and use it to send the data with survey.onComplete
+
 import axios from "axios";
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  NavLink,
+} from "react-router-dom";
+
 import * as SurveyJS from "survey-react";
 import "survey-react/modern.css";
 import questions from "./questions.js";
 
 SurveyJS.StylesManager.applyTheme("modern");
 const survey = new SurveyJS.Model(questions);
-
+// Update survey.onComplete
 survey.onComplete.add((result) => {
   axios.post("http://localhost:5000/survey-responses", {
     data: result.data,
   });
 });
 
-function App() {
-  return (
-    <div className="App">
-      <SurveyJS.Survey model={survey} />
-    </div>
-  );
-}
-
-export default App;
+// ...
 ```
 
-Now when we submit a survey response from the frontend, it is saved to the database on the backend.
+Now with the frontend server running in one terminal window:
+
+```
+npm start
+```
+
+And the backend server running in another terminal window:
+
+```
+nodemon server.js
+```
+
+When we visit http://localhost:3000/survey and submit a survey response, it is saved to the database on the backend. Give it a try.
+
+You can view the contents of the database with `psql` if desired:
+
+```
+psql survey_dev
+SELECT * FROM "SurveyResponses";
+
+# =>
+ id | user_id |                                data                                |         created_at         |         updated_at
+----+---------+--------------------------------------------------------------------+----------------------------+----------------------------
+  1 |      88 | {"frameworkUsing":"Yes","framework":["React"],"about":"It works!"} | 2020-12-08 12:59:38.933-08 | 2020-12-08 12:59:38.933-08
+(1 row)
+
+\q
+```
 
 ---
 
 ### 8.
 
-## Signup, login, and password reset
+## Signup, login, and logout
 
-Create an account at https://userfront.com
+Currently, anyone can submit a survey, and anyone can read all the surveys that have been submitted.
+
+We want each user to only submit one survey, and we want to only allow users to see their own survey response. To accomplish both of these goals, we need to authenticate our users.
+
+### What does it mean to be "logged in"?
+
+When a user "logs in" to a website, their browser is issued an access token that it can send to the server in subsequent requests. The server then requires this token to access certain routes. To "log out", the access token is invalidated by the server, and the user's browser deletes the token.
+
+In this application, we'll use a token standard called JSON Web Tokens (JWTs) that allows one server to issue access tokens, and any other server to verify them without contacting the original server. This standard has become a go-to technology for web applications in recent years due to their flexibility and security.
+
+### Add Userfront
+
+Userfront is an authentication and access control service that makes it simple to add signup, login, and logout, as well as more advanced auth features. It will issue access tokens when our users sign up or log in, and it will invalidate and remove those tokens when our users log out. It has a generous free tier and will save us from writing and maintaining a lot of complex auth code.
+
+Create an account at https://userfront.com, then install the `@userfront/react` package with:
 
 ```
-npm i @userfront/react --save
+npm install @userfront/react --save
 ```
+
+Visit the `Toolkit` section of your Userfront dashboard for installation instructions for the Signup and Login Forms. For React, setting up the Signup Form looks like:
 
 ```js
-import Toolkit from "@userfront/react";
-const Login = Toolkit.build({
-  toolId: "nadrrd",
-  tenantId: "5xbpy4nz",
-});
-```
-
-```js
-const Signup = Toolkit.build({
+// Sample
+import Userfront from "@userfront/react";
+Userfront.init("5xbpy4nz");
+const SignupForm = Userfront.build({
   toolId: "mnbrak",
-  tenantId: "5xbpy4nz",
 });
 ```
+
+To incorporate these forms into our application, we need to:
+
+- Add the `@userfront/react` package
+- Initialize the Signup and Login Forms
+- Add the `<SignupForm>` and `<LoginForm>` components to the proper views
+
+Update the `src/App.js` file to add the Signup and Login Forms:
+
+```js
+// src/App.js
+
+import axios from "axios";
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  NavLink,
+} from "react-router-dom";
+
+import * as SurveyJS from "survey-react";
+import "survey-react/modern.css";
+import questions from "./questions.js";
+
+// Add the @userfront/react package
+import Userfront from "@userfront/react";
+
+// Initialize the forms
+Userfront.init("5xbpy4nz");
+const SignupForm = Userfront.build({
+  toolId: "mnbrak",
+});
+const LoginForm = Userfront.build({
+  toolId: "nadrrd",
+});
+
+// ...
+
+// Add the <SignupForm/> and <LoginForm/> components to the view
+function Signup() {
+  return (
+    <div className="container py-5">
+      <SignupForm />
+    </div>
+  );
+}
+function Login() {
+  return (
+    <div className="container py-5">
+      <LoginForm />
+    </div>
+  );
+}
+```
+
+With our frontend server running, visiting http://localhost:3000/signup will show our signup form:
+
+![Userfront signup form](https://res.cloudinary.com/component/image/upload/v1607464088/permanent/survey-signup-0.png)
+
+Try signing up a user with your form.
+
+When you sign up, your user record will appear in your Userfront dashboard (under "Users" when in "Test mode"):
+
+![Userfront users](https://res.cloudinary.com/component/image/upload/v1607466656/permanent/survey-userfront-1.png)
+
+However, the page is redirected to `/dashboard`, which is not a route we have on our website.
 
 ### Change the redirection route to /survey
 
-In test mode, visit project settings and update "Login path" redirect
+Instead of `/dashboard`, we want our users to be redirected to `/survey` when they sign up or log in.
+
+Visit your Userfront dashboard `Settings` page and set the "Login path" to be `/survey`. That way when users sign up or log in, they will be redirected to the survey page.
+
+![Userfront settings](https://res.cloudinary.com/component/image/upload/v1607466213/permanent/survey-userfront-0.png)
+
+### Add a logout button
+
+Right now, our page shows the `Login` and `Signup` links in the top corner all the time.
+
+![Signup Login buttons](https://res.cloudinary.com/component/image/upload/v1607485269/permanent/survey-navbar-0.png)
+
+We want to show a `Logout` button if the user is logged in.
+
+![Logout button](https://res.cloudinary.com/component/image/upload/v1607485269/permanent/survey-navbar-1.png)
+
+To do this, we can use Userfront's built in methods. When the user is logged in, they will have an access token, and calling `User.accessToken()` will return a value. Thus, we can create an `if/else` statement to show different buttons if the user is logged in vs logged out.
+
+Update the `<LoginLogout/>` component with the following code:
+
+```js
+// src/App.js
+
+function LoginLogout() {
+  // If logged in
+  if (Userfront.accessToken()) {
+    return (
+      <ul className="navbar-nav ml-auto">
+        <li className="nav-item">
+          <button className="btn btn-link nav-link" onClick={Userfront.logout}>
+            Logout
+          </button>
+        </li>
+      </ul>
+    );
+  } else {
+    // If not logged in
+    return (
+      <ul className="navbar-nav ml-auto">
+        <li className="nav-item">
+          <NavLink to="/login" className="nav-link">
+            Login
+          </NavLink>
+        </li>
+        <li className="nav-item">
+          <NavLink to="/signup" className="nav-link">
+            Signup
+          </NavLink>
+        </li>
+      </ul>
+    );
+  }
+}
+```
+
+Note that the `Logout` button has `onClick={Userfront.logout}`. This will log out the user and then redirect the browser when the button is clicked.
+
+Try logging in and logging out with one of your test users.
 
 ---
 
