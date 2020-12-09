@@ -18,20 +18,20 @@ At a high level, this tutorial uses the following tools:
 
 The tutorial will build a site from scratch in the following order:
 
-|     | Section                                                                           |
-| --: | :-------------------------------------------------------------------------------- |
-|  1. | [Site & API design](#design)                                                      |
-|  2. | [Initial frontend setup (Create React App)](#initial-setup-with-create-react-app) |
-|  3. | [Add routing, styling, and survey to frontend](#add-routing-styling-and-survey)   |
-|  4. | [Initial backend setup (Express.js)](#set-up-backend-server)                      |
-|  5. | [Add a database connection](#add-a-database-connection)                           |
-|  6. | [Add testing to the backend](#testing)                                            |
-|  7. | [Save submitted data to the database](#save-a-survey-response-from-the-frontend)  |
-|  8. | [Add signup, login, and logout](#signup-login-and-logout)                         |
-|  9. | [Send a JWT with the request](#send-a-jwt-with-the-request)                       |
-| 10. | [Verify the JWT access token](#verify-the-jwt-access-token)                       |
-| 11. | [Add a protected route](#add-a-protected-route)                                   |
-| 12. | [Deploy to production](#notes-on-deployment)                                      |
+|     | Section                                                                                     |
+| --: | :------------------------------------------------------------------------------------------ |
+|  1. | [Site & API design](#design)                                                                |
+|  2. | [Initial frontend setup (Create React App)](#initial-setup-with-create-react-app)           |
+|  3. | [Add routing, styling, and survey to frontend](#add-routing-styling-and-survey)             |
+|  4. | [Initial backend setup (Express.js)](#set-up-backend-server)                                |
+|  5. | [Add a database connection](#add-a-database-connection)                                     |
+|  6. | [Add testing to the backend](#testing)                                                      |
+|  7. | [Save submitted data to the database](#save-a-survey-response-from-the-frontend)            |
+|  8. | [Add signup, login, and logout](#signup-login-and-logout)                                   |
+|  9. | [Send the JWT access token with each request](#send-the-jwt-access-token-with-each-request) |
+| 10. | [Verify the JWT access token](#verify-the-jwt-access-token)                                 |
+| 11. | [Add a protected route](#add-a-protected-route)                                             |
+| 12. | [Deploy to production](#notes-on-deployment)                                                |
 
 ---
 
@@ -1445,47 +1445,51 @@ Try logging in and logging out with one of your test users.
 
 ### 9.
 
-## Send a JWT with the request
+## Send the JWT access token with each request
 
-We'll send the access token when we submit a survey response, which will allow the API to know what user is making the request. We'll use a bearer token in the request header, which will look like:
+Now that the browser recieves a JWT upon login, we can send it to our backend with each request.
+
+We will send the access token when we submit a survey response, which will allow the API to know what user is making the request. We'll use a bearer token in the request header, which will look like:
 
 `Authorization: Bearer eyJhbGciOiJ...`
 
-### Set up the backend
+### Send the token with request
 
-We need to set the backend to accept the `Authorization` header.
+Update your `survey.onComplete` call to include the `Authorization` header like so:
 
-Update the `Access-Control-Allow-Headers` setting in `server.js` to allow the `Authorization` header.
+```js
+// src/App.js
+
+survey.onComplete.add((result) => {
+  axios.post(
+    "http://localhost:5000/survey-responses",
+    {
+      data: result.data,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${Userfront.accessToken()}`,
+      },
+    }
+  );
+});
+```
+
+This will send the access token when the survey is submitted.
+
+### Accept the Authorization header on the backend
+
+Our backend will throw a CORS error if we send a header it doesn't allow. So we need to tell our server to accept the `Authorization` header.
+
+Update the `Access-Control-Allow-Headers` setting in `server.js` to add the `Authorization` header in addition to the `Content-Type` header it already allows.
 
 ```js
 // server.js
+
 res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
 ```
 
-### Send the token with request
-
-We need to read the access token from the cookies, then attach it to our request.
-
-`npm install --save-dev js-cookie`
-
-```js
-// App.js
-// Import the Cookie library
-import Cookie from "js-cookie";
-
-// Update our post method to include the header
-axios.post(
-  "http://localhost:5000/survey-responses",
-  {
-    data: result.data,
-  },
-  {
-    headers: {
-      Authorization: `Bearer ${Cookie.get("access.5xbpy4nz")}`,
-    },
-  }
-);
-```
+Our JWT is now sent with each form submission, and we can process it on the server.
 
 ---
 
@@ -1493,13 +1497,13 @@ axios.post(
 
 ## Verify the JWT access token
 
-Now that the client sends an access JWT, we need to verify and decode it on the backend.
+Now that the browser sends a JWT, we need to verify and decode it on the backend.
 
-`npm install --save jsonwebtoken`
+We will again use test-driven development to add this feature.
 
-`npm run test-backend:watch`
+In order to create JWTs for our tests, we need an RSA key pair: a private key used to sign the JWTs and a public key used to verify them.
 
-In order to write tests, we need to create JWTs, which we will sign with an RSA key. For that, we need a key pair: private key used for signing the JWT and a public key used to verify it.
+You can use an RSA key pair generator to get a key pair for testing, or you can use the private and public key pair below:
 
 ```
 -----BEGIN RSA PRIVATE KEY-----
@@ -1518,8 +1522,18 @@ Tb8cVka/B0xrWTAX/G+7l1fA7aEWX7/OJsAXkD4aEp3e/d3rNFH/KacCAwEAAQ==
 -----END PUBLIC KEY-----
 ```
 
+### Configure the tests
+
+Add the public and private keys to your test configuration. We will use `process.env.RSA_PUBLIC_KEY` for the public key because it will also be used in development and production. The private key will only be used to generate JWTs in our test environment, since Userfront is generating our JWTs in development and production. Thus, we assign it to the test variable `Test.rsaPrivateKey`.
+
 ```js
 // api/test/test.config.js
+
+process.env.DATABASE_NAME = "survey_test";
+const { sequelize, modelNames } = require("../config/sequelize.js");
+
+const Test = {};
+
 process.env.RSA_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
 MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJ8PxdNGVwO0Wl4irLuYyrYvNCHMO2Zc
 Tb8cVka/B0xrWTAX/G+7l1fA7aEWX7/OJsAXkD4aEp3e/d3rNFH/KacCAwEAAQ==
@@ -1534,21 +1548,41 @@ BfUeyvoXfxIeNtwEZkTnqRdxmdCKK43xAiEAi4fv9aHEpXIItlTs5a0z+KnBY+86
 Qesx5AOkwEFLKT8CICbX2fh/gwoi/nOuXEqpnJVGSW3DFGdGdF7PH2Dnq6jxAiBv
 x/s4QxfQhYvhPMXisV1PYQ0O2VMMBe4PO7Ioi4xMqQ==
 -----END RSA PRIVATE KEY-----`;
+
+const resetTable = (modelName) => {
+  if (!sequelize.models[modelName]) throw `modelName ${modelName} undefined`;
+  return sequelize.models[modelName].sync({ force: true, logging: false });
+};
+
+Test.resetAllTables = async () => {
+  let deferreds = [];
+  modelNames.map((name) => {
+    deferreds.push(resetTable(name));
+  });
+  return Promise.all(deferreds);
+};
+
+module.exports = Test;
 ```
 
-Now we can update our test for `POST /survey-responses`.
+### Update test to use JWT
 
-We create a `token`, which is a signed JWT, and then include it in the test request's header as `authorization: Bearer ${token}`.
+We will update our test to create and send a JWT to the `POST /survey-responses` endpoint with the header set as `authorization: Bearer ${token}`.
 
-Then we assert that the `userId` of the created survey response should equal `88`, which is the `userId` from the token.
+We will then assert that the `userId` of the created survey response equals the `userId` from the token.
+
+In order to create a JWT, install the `jsonwebtoken` library:
+
+`npm install jsonwebtoken --save`
 
 ```js
 // api/test/surveyResponses.crud.spec.js
+
 it("POST /survey-responses should create a survey response", async () => {
   // Create a JWT and sign it with the RSA private key
   const token = jwt.sign(
     {
-      userId: 88,
+      userId: 1,
     },
     Test.rsaPrivateKey,
     { algorithm: "RS256" }
