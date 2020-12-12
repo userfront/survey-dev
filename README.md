@@ -1290,11 +1290,42 @@ We want each user to only submit one survey, and we want to only allow users to 
 
 When a user "logs in" to a website, their browser is issued an access token that it can send to the server in subsequent requests. The server then requires this token to access certain routes. To "log out", the access token is invalidated by the server, and the user's browser deletes the token.
 
-In this application, we'll use a token standard called JSON Web Tokens (JWTs) that allows one server to issue access tokens, and any other server to verify them without contacting the original server. This standard has become a go-to technology for web applications in recent years due to their flexibility and security.
+In our application, we'll use a token standard called JSON Web Tokens (JWTs) that allows one server to issue access tokens, and any other server to verify them without contacting the original server. This standard has become a go-to technology for web applications in recent years due to their flexibility and security.
+
+A JWT has a payload that is a JSON object, like:
+
+```json
+{
+  "userId": 1,
+  "exp": 1516239022
+}
+```
+
+When encoded, the JWT will look like:
+
+```
+eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImV4cCI6MTUxNjIzOTAyMn0.URLqN3WS69wKcappb8obHawjC0eRrQ-a9lftZNoG9khwiUZug9IQ3_1hIW4R9g7jZGiAfY1bKEdSNSp5YZIJ_w
+```
+
+This value is stored in the browser, often as a cookie. It may look like an intimidating value, but in actuality the first 2 terms (as separated by dots ".") are just base64-encoded JSON, which you can check in your browser's debugging console:
+
+```js
+atob("eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9");
+// -> "{"alg":"RS256","typ":"JWT"}"
+
+atob("eyJ1c2VySWQiOjEsImV4cCI6MTUxNjIzOTAyMn0");
+// -> "{"userId":1,"exp":1516239022}"
+```
+
+The third part of the JWT is the cryptographic signature, which servers can use to verify that the token is authentic.
+
+It is important to note that JWTs are **NOT** encrypted -- the payload can be read by anyone. That means they should always be secured over `https` and should only be sent to the user that you want to log in.
+
+There are many, many pitfalls to configuring and keeping authentication up to date, so we will use a service to handle this in our application.
 
 ### Add Userfront
 
-Userfront is an authentication and access control service that makes it simple to add signup, login, and logout, as well as more advanced auth features. It will issue access tokens when our users sign up or log in, and it will invalidate and remove those tokens when our users log out. It has a generous free tier and will save us from writing and maintaining a lot of complex auth code.
+Userfront is an authentication and access control service that makes it simple to add signup, login, and logout, as well as more advanced auth features. It will issue JWT access tokens when our users sign up or log in, and it will invalidate and remove those tokens when our users log out. It has a generous free tier and will save us from writing and maintaining a lot of complex auth code.
 
 Create an account at https://userfront.com, then install the `@userfront/react` package with:
 
@@ -1501,9 +1532,9 @@ Now that the browser sends a JWT, we need to verify and decode it on the backend
 
 We will again use test-driven development to add this feature.
 
-In order to create JWTs for our tests, we need an RSA key pair: a private key used to sign the JWTs and a public key used to verify them.
+In order to create JWTs for our tests, we need an RSA key pair. RSA is a technology for cryptographically signing keys so that they can be shared. An RSA key pair consists of a private key used to sign and a public key used to verify. In our case, we will be signing and verifying JWTs.
 
-You can use an RSA key pair generator to get a key pair for testing, or you can use the private and public key pair below:
+To get a key pair for testing, you can use an RSA key pair generator available online, or you can use the private and public key pair below:
 
 ```
 -----BEGIN RSA PRIVATE KEY-----
@@ -1515,7 +1546,9 @@ BfUeyvoXfxIeNtwEZkTnqRdxmdCKK43xAiEAi4fv9aHEpXIItlTs5a0z+KnBY+86
 Qesx5AOkwEFLKT8CICbX2fh/gwoi/nOuXEqpnJVGSW3DFGdGdF7PH2Dnq6jxAiBv
 x/s4QxfQhYvhPMXisV1PYQ0O2VMMBe4PO7Ioi4xMqQ==
 -----END RSA PRIVATE KEY-----
+```
 
+```
 -----BEGIN PUBLIC KEY-----
 MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJ8PxdNGVwO0Wl4irLuYyrYvNCHMO2Zc
 Tb8cVka/B0xrWTAX/G+7l1fA7aEWX7/OJsAXkD4aEp3e/d3rNFH/KacCAwEAAQ==
@@ -1565,11 +1598,11 @@ Test.resetAllTables = async () => {
 module.exports = Test;
 ```
 
-### Update test to use JWT
+### Update the test to use JWT
 
 We will update our test to create and send a JWT to the `POST /survey-responses` endpoint with the header set as `authorization: Bearer ${token}`.
 
-We will then assert that the `userId` of the created survey response equals the `userId` from the token.
+We will then assert that the `userId` of the created survey response comes from the token's payload.
 
 In order to create a JWT, install the `jsonwebtoken` library:
 
