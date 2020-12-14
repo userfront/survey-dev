@@ -1,17 +1,15 @@
-const request = require("request");
+const axios = require("axios");
 const chai = require("chai");
 const expect = chai.expect;
 const jwt = require("jsonwebtoken");
 const Test = require("./test.config.js");
 const { sequelize } = require("../database/instance.js");
 
-const uri = "http://localhost:5000";
-const req = request.defaults({
-  json: true,
-  uri,
+const ax = axios.create({
+  baseURL: "http://localhost:5000",
 });
 
-describe.only("SurveyResponses endpoint", () => {
+describe("SurveyResponses endpoint", () => {
   before(async () => {
     // Reset the database before running these tests
     await Test.resetDb();
@@ -32,6 +30,49 @@ describe.only("SurveyResponses endpoint", () => {
     return Promise.resolve();
   });
 
+  it("POST /survey-responses should create a survey response", async () => {
+    // Create a JWT and sign it with the RSA private key
+    const token = jwt.sign(
+      {
+        userId: 11,
+      },
+      Test.rsaPrivateKey,
+      { algorithm: "RS256" }
+    );
+
+    const payload = {
+      data: {
+        favoriteColor: "green",
+        technology: ["Vue", "Node.js"],
+      },
+    };
+
+    // Perform a POST request to /survey-responses
+    const { data, status } = await ax.post("/survey-responses", payload, {
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+    });
+
+    // Check that the server returns a 200 status code
+    expect(status).to.equal(200);
+
+    // Check that the surveyResponse is returned
+    expect(data.id).to.exist;
+    expect(data.userId).to.equal(11);
+    expect(data.data).to.deep.equal(payload.data);
+
+    // Check that a surveyResponse was created in the database
+    const surveyResponse = await sequelize.models.SurveyResponse.findOne({
+      where: { id: data.id },
+    });
+    expect(surveyResponse).to.exist;
+    expect(surveyResponse.userId).to.equal(11);
+    expect(surveyResponse.data).to.deep.equal(payload.data);
+
+    return Promise.resolve();
+  });
+
   it("GET /survey-responses should return survey responses", async () => {
     // Create a JWT signed with the RSA private key
     const token = jwt.sign(
@@ -43,27 +84,23 @@ describe.only("SurveyResponses endpoint", () => {
     );
 
     // Perform a GET request to /survey-responses
-    const payload = {
-      uri: `${uri}/survey-responses`,
+    const { data, status } = await ax.get("/survey-responses", {
       headers: {
         authorization: `Bearer ${token}`,
       },
-    };
-    const { res, body } = await new Promise((resolve) => {
-      req.get(payload, (err, res, body) => resolve({ res, body }));
     });
 
     // Check that the server returns a 200 status code
-    expect(res.statusCode).to.equal(200);
+    expect(status).to.equal(200);
 
     // Check that the body has a surveyResponse array
-    expect(body.surveyResponses).to.exist;
+    expect(data.surveyResponses).to.exist;
 
     // Check that the surveyResponse array has 1 surveyResponses in it
-    expect(body.surveyResponses.length).to.equal(1);
+    expect(data.surveyResponses.length).to.equal(1);
 
     // Check that the surveyResponses have the correct structure
-    const surveyResponse = body.surveyResponses[0];
+    const surveyResponse = data.surveyResponses[0];
     expect(surveyResponse.userId).to.equal(3);
     expect(surveyResponse.data).to.exist;
     return Promise.resolve();
@@ -89,37 +126,32 @@ j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
       }
     );
 
-    const payload = {
-      uri: `${uri}/survey-responses`,
-      headers: {
-        authorization: `Bearer ${token}`,
-      },
-    };
-
-    // Perform a POST request to /survey-responses
-    const { res, body } = await new Promise((resolve) => {
-      req.get(payload, (err, res, body) => resolve({ res, body }));
-    });
-
-    // Check that the server returns a 401 status code
-    expect(res.statusCode).to.equal(401);
-    expect(body).to.equal("Unauthorized");
+    try {
+      // Perform a GET request to /survey-responses
+      await ax.get("/survey-responses", {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (error) {
+      // Check that the server returns a 401 status code
+      const { status, data } = error.response;
+      expect(status).to.equal(401);
+      expect(data).to.equal("Unauthorized");
+    }
     return Promise.resolve();
   });
 
   it("GET /survey-responses should return 401 if no authorization header is present", async () => {
-    const payload = {
-      uri: `${uri}/survey-responses`,
-    };
-
-    // Perform a POST request to /survey-responses
-    const { res, body } = await new Promise((resolve) => {
-      req.get(payload, (err, res, body) => resolve({ res, body }));
-    });
-
-    // Check that the server returns a 401 status code
-    expect(res.statusCode).to.equal(401);
-    expect(body).to.equal("Unauthorized");
+    try {
+      // Perform a GET request to /survey-responses
+      await ax.get("/survey-responses");
+    } catch (error) {
+      // Check that the server returns a 401 status code
+      const { status, data } = error.response;
+      expect(status).to.equal(401);
+      expect(data).to.equal("Unauthorized");
+    }
     return Promise.resolve();
   });
 
@@ -134,38 +166,55 @@ j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
     );
 
     const payload = {
-      uri: `${uri}/survey-responses`,
-      body: {
-        data: {
-          favoriteColor: "green",
-          technology: ["Vue", "Node.js"],
-        },
-      },
-      headers: {
-        authorization: `Bearer ${token}`,
+      data: {
+        favoriteColor: "green",
+        technology: ["Vue", "Node.js"],
       },
     };
 
     // Perform a POST request to /survey-responses
-    const { res, body } = await new Promise((resolve) => {
-      req.post(payload, (err, res, body) => resolve({ res, body }));
+    const { status, data } = await ax.post("/survey-responses", payload, {
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
     });
 
     // Check that the server returns a 200 status code
-    expect(res.statusCode).to.equal(200);
+    expect(status).to.equal(200);
 
     // Check that the surveyResponse is returned
-    expect(body.id).to.exist;
-    expect(body.userId).to.equal(88);
-    expect(body.data).to.deep.equal(payload.body.data);
+    expect(data.id).to.exist;
+    expect(data.userId).to.equal(88);
+    expect(data.data).to.deep.equal(payload.data);
 
     // Check that a surveyResponse was created in the database
     const surveyResponse = await sequelize.models.SurveyResponse.findOne({
-      where: { id: body.id },
+      where: { id: data.id },
     });
     expect(surveyResponse).to.exist;
     expect(surveyResponse.userId).to.equal(88);
-    expect(surveyResponse.data).to.deep.equal(payload.body.data);
+    expect(surveyResponse.data).to.deep.equal(payload.data);
+
+    return Promise.resolve();
+  });
+
+  it("POST /survey-responses should return 401 if the authorization header is missing", async () => {
+    const payload = {
+      data: {
+        favoriteColor: "red",
+        technology: ["Angular.js"],
+      },
+    };
+
+    try {
+      // Perform a POST request to /survey-responses
+      await ax.post("/survey-responses", payload);
+    } catch (err) {
+      // Check that the server returns a 401 status code
+      const { status, data } = err.response;
+      expect(status).to.equal(401);
+      expect(data).to.equal("Unauthorized");
+    }
 
     return Promise.resolve();
   });
@@ -174,7 +223,7 @@ j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
     // Create an expired JWT signed with the RSA private key
     const token = jwt.sign(
       {
-        userId: 88,
+        userId: 22,
       },
       Test.rsaPrivateKey,
       {
@@ -184,25 +233,26 @@ j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
     );
 
     const payload = {
-      uri: `${uri}/survey-responses`,
-      body: {
-        data: {
-          someData: "Here",
-        },
-      },
-      headers: {
-        authorization: `Bearer ${token}`,
+      data: {
+        favoriteColor: "red",
+        technology: ["Angular.js"],
       },
     };
 
-    // Perform a POST request to /survey-responses
-    const { res, body } = await new Promise((resolve) => {
-      req.post(payload, (err, res, body) => resolve({ res, body }));
-    });
+    try {
+      // Perform a POST request to /survey-responses
+      const { data, status } = await ax.post("/survey-responses", payload, {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (err) {
+      // Check that the server returns a 401 status code
+      const { status, data } = err.response;
+      expect(status).to.equal(401);
+      expect(data).to.equal("Unauthorized");
+    }
 
-    // Check that the server returns a 401 status code
-    expect(res.statusCode).to.equal(401);
-    expect(body).to.equal("Unauthorized");
     return Promise.resolve();
   });
 
@@ -210,7 +260,7 @@ j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
     // Create a JWT signed with a different RSA private key
     const token = jwt.sign(
       {
-        userId: 88,
+        userId: 22,
       },
       `-----BEGIN RSA PRIVATE KEY-----
 MIIBOwIBAAJBALHlFNfHdfCq4stiIZyTmkawfJXgGSXHHy9L2YmcDYoeoL/ljIXn
@@ -227,46 +277,26 @@ j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
     );
 
     const payload = {
-      uri: `${uri}/survey-responses`,
-      body: {
-        data: {
-          someData: "Here",
-        },
-      },
-      headers: {
-        authorization: `Bearer ${token}`,
+      data: {
+        favoriteColor: "red",
+        technology: ["Angular.js"],
       },
     };
 
-    // Perform a POST request to /survey-responses
-    const { res, body } = await new Promise((resolve) => {
-      req.post(payload, (err, res, body) => resolve({ res, body }));
-    });
-
-    // Check that the server returns a 401 status code
-    expect(res.statusCode).to.equal(401);
-    expect(body).to.equal("Unauthorized");
-    return Promise.resolve();
-  });
-
-  it("POST /survey-responses should return 401 if the authorization header is missing", async () => {
-    const payload = {
-      uri: `${uri}/survey-responses`,
-      body: {
-        data: {
-          someData: "Here",
+    try {
+      // Perform a POST request to /survey-responses
+      const { data, status } = await ax.post("/survey-responses", payload, {
+        headers: {
+          authorization: `Bearer ${token}`,
         },
-      },
-    };
+      });
+    } catch (err) {
+      // Check that the server returns a 401 status code
+      const { status, data } = err.response;
+      expect(status).to.equal(401);
+      expect(data).to.equal("Unauthorized");
+    }
 
-    // Perform a POST request to /survey-responses
-    const { res, body } = await new Promise((resolve) => {
-      req.post(payload, (err, res, body) => resolve({ res, body }));
-    });
-
-    // Check that the server returns a 401 status code
-    expect(res.statusCode).to.equal(401);
-    expect(body).to.equal("Unauthorized");
     return Promise.resolve();
   });
 });

@@ -1611,50 +1611,49 @@ In order to create a JWT, install the `jsonwebtoken` library:
 ```js
 // api/test/surveyResponses.crud.spec.js
 
+const jwt = require("jsonwebtoken");
+
+// ...
+
 it("POST /survey-responses should create a survey response", async () => {
   // Create a JWT and sign it with the RSA private key
   const token = jwt.sign(
     {
-      userId: 1,
+      userId: 11,
     },
     Test.rsaPrivateKey,
     { algorithm: "RS256" }
   );
 
   const payload = {
-    uri: `${uri}/survey-responses`,
-    body: {
-      data: {
-        favoriteColor: "green",
-        technology: ["Vue", "Node.js"],
-      },
-    },
-
-    // Perform a POST request to /survey-responses
-    headers: {
-      authorization: `Bearer ${token}`,
+    data: {
+      favoriteColor: "green",
+      technology: ["Vue", "Node.js"],
     },
   };
 
-  const { res, body } = await new Promise((resolve) => {
-    req.post(payload, (err, res, body) => resolve({ res, body }));
+  // Perform a POST request to /survey-responses
+  const { data, status } = await ax.post("/survey-responses", payload, {
+    headers: {
+      authorization: `Bearer ${token}`,
+    },
   });
 
   // Check that the server returns a 200 status code
-  expect(res.statusCode).to.equal(200);
+  expect(status).to.equal(200);
 
   // Check that the surveyResponse is returned
-  expect(body.id).to.exist;
-  expect(body.userId).to.equal(88);
-  expect(body.data).to.deep.equal(payload.body.data);
+  expect(data.id).to.exist;
+  expect(data.userId).to.equal(11);
+  expect(data.data).to.deep.equal(payload.data);
 
   // Check that a surveyResponse was created in the database
   const surveyResponse = await sequelize.models.SurveyResponse.findOne({
-    where: { id: body.id },
+    where: { id: data.id },
   });
   expect(surveyResponse).to.exist;
-  expect(surveyResponse.userId).to.equal(88);
-  expect(surveyResponse.data).to.deep.equal(payload.body.data);
+  expect(surveyResponse.userId).to.equal(11);
+  expect(surveyResponse.data).to.deep.equal(payload.data);
 
   return Promise.resolve();
 });
@@ -1662,28 +1661,28 @@ it("POST /survey-responses should create a survey response", async () => {
 
 This test should be failing now, because the model isn't saving the `userId` from the token yet:
 
-![Failing test](https://res.cloudinary.com/component/image/upload/v1605899038/permanent/failing-test-1.png)
+[TODO update this image [survey-test-3]]
+![Failing test]()
 
 ### Save the token's userId with the survey response
 
-We can get the test passing by updating the route to verify the JWT and include it when saving the survey response:
+We can get the test passing by updating the route to verify the JWT and include it when saving the survey response.
 
 ```js
 // server.js
-const jwt = require("jsonwebtoken");
-const rsaPublicKey = `-----BEGIN PUBLIC KEY-----
-MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJ8PxdNGVwO0Wl4irLuYyrYvNCHMO2Zc
-Tb8cVka/B0xrWTAX/G+7l1fA7aEWX7/OJsAXkD4aEp3e/d3rNFH/KacCAwEAAQ==
------END PUBLIC KEY-----`;
 
-...
+const jwt = require("jsonwebtoken");
+
+//...
 
 app.post("/survey-responses", async (req, res) => {
   // Get the JWT from the header named "authorization"
   const token = req.headers.authorization.replace("Bearer ", "");
 
   // Verify the token using the RSA public key
-  const verified = jwt.verify(token, rsaPublicKey, { algorithm: "RS256" });
+  const verified = jwt.verify(token, process.env.RSA_PUBLIC_KEY, {
+    algorithm: "RS256",
+  });
 
   // Use the userId from the token when creating the database record
   const surveyResponse = await sequelize.models.SurveyResponse.create({
@@ -1694,23 +1693,59 @@ app.post("/survey-responses", async (req, res) => {
 });
 ```
 
+And now the test should be passing:
+
+[TODO add image of test passing [survey-test-4]]
+
 ### Handle cases where the JWT is incorrect or missing
 
 In order to build a secure system, we want to make sure that we don't permit access to unauthorized users. We can write tests to assert the following:
 
+- Should return 401 error when authorization header is missing
 - Should return 401 error when JWT is expired
 - Should return 401 error when JWT is signed with a different key
-- Should return 401 error when authorization header is missing
 
-#### Testing expired JWT
+#### Testing with a missing authorization header
+
+To test the scenario where the authorization header is not included, we can send a request without an authorization header and then assert that our server returns a `401` status code (Unauthorized):
 
 ```js
 // api/test/surveyResponses.crud.spec.js
+
+it("POST /survey-responses should return 401 if the authorization header is missing", async () => {
+  const payload = {
+    data: {
+      favoriteColor: "red",
+      technology: ["Angular.js"],
+    },
+  };
+
+  try {
+    // Perform a POST request to /survey-responses
+    await ax.post("/survey-responses", payload);
+  } catch (err) {
+    // Check that the server returns a 401 status code
+    const { status, data } = err.response;
+    expect(status).to.equal(401);
+    expect(data).to.equal("Unauthorized");
+  }
+
+  return Promise.resolve();
+});
+```
+
+#### Testing expired JWT
+
+To test the scenario where an expired JWT is submitted, we can set the `expiresIn` to a negative number, which will make the JWT be expired. Then we can assert that the request fails with a `401` status code (Unauthorized):
+
+```js
+// api/test/surveyResponses.crud.spec.js
+
 it("POST /survey-responses should return 401 if JWT is expired", async () => {
   // Create an expired JWT signed with the RSA private key
   const token = jwt.sign(
     {
-      userId: 88,
+      userId: 22,
     },
     Test.rsaPrivateKey,
     {
@@ -1720,38 +1755,42 @@ it("POST /survey-responses should return 401 if JWT is expired", async () => {
   );
 
   const payload = {
-    uri: `${uri}/survey-responses`,
-    body: {
-      data: {
-        someData: "Here",
-      },
-    },
-    headers: {
-      authorization: `Bearer ${token}`,
+    data: {
+      favoriteColor: "red",
+      technology: ["Angular.js"],
     },
   };
 
-  // Perform a POST request to /survey-responses
-  const { res, body } = await new Promise((resolve) => {
-    req.post(payload, (err, res, body) => resolve({ res, body }));
-  });
+  try {
+    // Perform a POST request to /survey-responses
+    const { data, status } = await ax.post("/survey-responses", payload, {
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (err) {
+    // Check that the server returns a 401 status code
+    const { status, data } = err.response;
+    expect(status).to.equal(401);
+    expect(data).to.equal("Unauthorized");
+  }
 
-  // Check that the server returns a 401 status code
-  expect(res.statusCode).to.equal(401);
-  expect(body).to.equal("Unauthorized");
   return Promise.resolve();
 });
 ```
 
 #### Testing invalid JWT (signed by a different private key)
 
+To test the scenario where a JWT is invalid because it was signed by a different private key, we can create a JWT with a random private key and then assert that it fails with a `401` status code (Unauthorized):
+
 ```js
 // api/test/surveyResponses.crud.spec.js
+
 it("POST /survey-responses should return 401 if JWT is signed with wrong key", async () => {
   // Create a JWT signed with a different RSA private key
   const token = jwt.sign(
     {
-      userId: 88,
+      userId: 22,
     },
     `-----BEGIN RSA PRIVATE KEY-----
 MIIBOwIBAAJBALHlFNfHdfCq4stiIZyTmkawfJXgGSXHHy9L2YmcDYoeoL/ljIXn
@@ -1768,52 +1807,26 @@ j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
   );
 
   const payload = {
-    uri: `${uri}/survey-responses`,
-    body: {
-      data: {
-        someData: "Here",
-      },
-    },
-    headers: {
-      authorization: `Bearer ${token}`,
+    data: {
+      favoriteColor: "red",
+      technology: ["Angular.js"],
     },
   };
 
-  // Perform a POST request to /survey-responses
-  const { res, body } = await new Promise((resolve) => {
-    req.post(payload, (err, res, body) => resolve({ res, body }));
-  });
-
-  // Check that the server returns a 401 status code
-  expect(res.statusCode).to.equal(401);
-  expect(body).to.equal("Unauthorized");
-  return Promise.resolve();
-});
-```
-
-#### Testing with a missing authorization header
-
-```js
-// api/test/surveyResponses.crud.spec.js
-it("should return 401 if the authorization header is missing", async () => {
-  // Don't include the authorization header
-  const payload = {
-    uri: `${uri}/survey-responses`,
-    body: {
-      data: {
-        someData: "Here",
+  try {
+    // Perform a POST request to /survey-responses
+    const { data, status } = await ax.post("/survey-responses", payload, {
+      headers: {
+        authorization: `Bearer ${token}`,
       },
-    },
-  };
+    });
+  } catch (err) {
+    // Check that the server returns a 401 status code
+    const { status, data } = err.response;
+    expect(status).to.equal(401);
+    expect(data).to.equal("Unauthorized");
+  }
 
-  // Perform a POST request to /survey-responses
-  const { res, body } = await new Promise((resolve) => {
-    req.post(payload, (err, res, body) => resolve({ res, body }));
-  });
-
-  // Check that the server returns a 401 status code
-  expect(res.statusCode).to.equal(401);
-  expect(body).to.equal("Unauthorized");
   return Promise.resolve();
 });
 ```
@@ -1824,10 +1837,13 @@ We can get these tests to pass by returning an `Unauthorized` error if the proce
 
 ```js
 // server.js
+
 app.post("/survey-responses", async (req, res) => {
   try {
     const token = req.headers.authorization.replace("Bearer ", "");
-    const verified = jwt.verify(token, rsaPublicKey, { algorithm: "RS256" });
+    const verified = jwt.verify(token, process.env.RSA_PUBLIC_KEY, {
+      algorithm: "RS256",
+    });
     const surveyResponse = await sequelize.models.SurveyResponse.create({
       userId: verified.userId,
       data: req.body.data,
@@ -1839,11 +1855,23 @@ app.post("/survey-responses", async (req, res) => {
 });
 ```
 
+Now when we run our test command:
+
+```
+npm run test-backend
+```
+
+All of our tests should be passing:
+
+[TODO add image [survey-test-5]]
+
 ### Add RSA public key for development mode
 
-Our tests are working, but we're using a dummy RSA public key. That won't work for development or production, so we need to add the "test mode" key from Userfront to our .env file.
+Our tests are working, so now we can check to see that the backend works with the frontend.
 
-Find the RSA public key in the Userfront dashboard
+For our local tests, we're using a dummy RSA public key. That won't work for development or production, so we need to add the key from Userfront to our .env file.
+
+Visit the Userfront dashboard and select your project settings while in test mode. From there, find the RSA public key for your project:
 
 ```
 -----BEGIN RSA PUBLIC KEY-----
@@ -1863,22 +1891,35 @@ In order to add a multi-line RSA key to the .env file, we need to put the value 
 
 ```
 # api/.env
+
 DATABASE_NAME=survey_dev
 DATABASE_USERNAME=postgres
 DATABASE_PASSWORD=null
 DATABASE_HOST=localhost
 DATABASE_DIALECT=postgres
-DATABASE_PORT=5431
+DATABASE_PORT=5432
 RSA_PUBLIC_KEY="-----BEGIN RSA PUBLIC KEY-----\nMIIBigKCAYEAymqnnSQInFgmVhsSLyZWCKCObqCcZQQHrOdE/aqVwvaSyIbbpc01\n+/lucPrdsKUAQCo0C93GsoDRXUYOEJ4Gl2z0H3SpOtbmSDTp6mWKU4NZvxKzG/Y2\nVXMzgg510GOAvfXQABpKyvbjriXPJ9SOCxeAqlu3nHnKY9lWbmduBAF3AOa1Irhu\ni1NigCdkl0anHGYuCpufpkk8PnyrvDWe9GRJLBVd61ImeLl9EFysomF/H0wIgOvX\no+WLQNx/61m4JTODQDbf8R9uWr8eqAFfgt26BU4p1lUQPg6rAc6+9Ry3K0jAJB0b\n44pcEd6U5a7rjerzu1IMHIQXJXRDicJE1wYIe8iu7xCAyTvG1DOKFIuT/1Ny8Au/\nggbpBU+tnnH4cF+9DbOT3wi94sj85JsEN8V3VOtFPHeHlZSo3nOi5QqaJiSjHoCI\nO35Ql0ouy7Qe8i8YWibbrfm7lrO7TlYF89tiPhQc/TgYsD+iqMwDsgffgHLClZHQ\nln5rVhbqZlcZAgMBAAE=\n-----END RSA PUBLIC KEY-----"
 ```
 
 ### Try the development site
 
+Make sure both of the servers are running (in separate terminal windows).
+
+Frontend
+
+```
+npm start
+```
+
+Backend
+
 ```
 nodemon server.js
 ```
 
-Now submitting our survey when logged in should work.
+Now log in and visit the survey page http://localhost:3000/. Submitting the survey will POST the data to the backend, where it will be saved.
+
+We have successfully implemented authentication. Now we can add authorization, where some logged in users are allowed to perform an action while others are not.
 
 ---
 
