@@ -50,6 +50,19 @@ app.post("/survey-responses", async (req, res) => {
   }
 });
 
+app.get("/results", async (req, res) => {
+  try {
+    const token = req.headers.authorization.replace("Bearer ", "");
+    const verified = jwt.verify(token, rsaPublicKey, {
+      algorithm: "RS256",
+    });
+    console.log(verified);
+    return res.send({ results: {} });
+  } catch (error) {
+    return res.status(401).send("Unauthorized");
+  }
+});
+
 app.get("/status", async (req, res) => {
   return res.send("ok");
 });

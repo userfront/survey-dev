@@ -30,49 +30,6 @@ describe("SurveyResponses endpoint", () => {
     return Promise.resolve();
   });
 
-  it("POST /survey-responses should create a survey response", async () => {
-    // Create a JWT and sign it with the RSA private key
-    const token = jwt.sign(
-      {
-        userId: 11,
-      },
-      Test.rsaPrivateKey,
-      { algorithm: "RS256" }
-    );
-
-    const payload = {
-      data: {
-        favoriteColor: "green",
-        technology: ["Vue", "Node.js"],
-      },
-    };
-
-    // Perform a POST request to /survey-responses
-    const { data, status } = await ax.post("/survey-responses", payload, {
-      headers: {
-        authorization: `Bearer ${token}`,
-      },
-    });
-
-    // Check that the server returns a 200 status code
-    expect(status).to.equal(200);
-
-    // Check that the surveyResponse is returned
-    expect(data.id).to.exist;
-    expect(data.userId).to.equal(11);
-    expect(data.data).to.deep.equal(payload.data);
-
-    // Check that a surveyResponse was created in the database
-    const surveyResponse = await sequelize.models.SurveyResponse.findOne({
-      where: { id: data.id },
-    });
-    expect(surveyResponse).to.exist;
-    expect(surveyResponse.userId).to.equal(11);
-    expect(surveyResponse.data).to.deep.equal(payload.data);
-
-    return Promise.resolve();
-  });
-
   it("GET /survey-responses should return survey responses", async () => {
     // Create a JWT signed with the RSA private key
     const token = jwt.sign(
@@ -156,10 +113,10 @@ j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
   });
 
   it("POST /survey-responses should create a survey response", async () => {
-    // Create a JWT signed with the RSA private key
+    // Create a JWT and sign it with the RSA private key
     const token = jwt.sign(
       {
-        userId: 88,
+        userId: 11,
       },
       Test.rsaPrivateKey,
       { algorithm: "RS256" }
@@ -173,7 +130,7 @@ j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
     };
 
     // Perform a POST request to /survey-responses
-    const { status, data } = await ax.post("/survey-responses", payload, {
+    const { data, status } = await ax.post("/survey-responses", payload, {
       headers: {
         authorization: `Bearer ${token}`,
       },
@@ -184,7 +141,7 @@ j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
 
     // Check that the surveyResponse is returned
     expect(data.id).to.exist;
-    expect(data.userId).to.equal(88);
+    expect(data.userId).to.equal(11);
     expect(data.data).to.deep.equal(payload.data);
 
     // Check that a surveyResponse was created in the database
@@ -192,7 +149,7 @@ j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
       where: { id: data.id },
     });
     expect(surveyResponse).to.exist;
-    expect(surveyResponse.userId).to.equal(88);
+    expect(surveyResponse.userId).to.equal(11);
     expect(surveyResponse.data).to.deep.equal(payload.data);
 
     return Promise.resolve();
