@@ -56,8 +56,18 @@ app.get("/results", async (req, res) => {
     const verified = jwt.verify(token, rsaPublicKey, {
       algorithm: "RS256",
     });
-    console.log(verified);
-    return res.send({ results: {} });
+    if (
+      !verified.authorization ||
+      !verified.authorization["5xbpy4nz"] ||
+      verified.authorization["5xbpy4nz"].roles.indexOf("admin") < 0
+    ) {
+      throw new Error("Unauthorized");
+    }
+    return res.send({
+      results: {
+        data: [],
+      },
+    });
   } catch (error) {
     return res.status(401).send("Unauthorized");
   }

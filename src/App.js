@@ -153,7 +153,9 @@ function Survey() {
           },
         })
         .then(({ data }) => {
-          setResponse(data.surveyResponses[0]);
+          if (data && data.surveyResponses) {
+            setResponse(data.surveyResponses[0]);
+          }
         });
     }
   });
@@ -207,10 +209,26 @@ function LoginLogout() {
 }
 
 function Results() {
+  const [results, setResults] = useState({});
+  useEffect(() => {
+    if (!results.data) {
+      axios
+        .get(`${apiRoot}/results`, {
+          headers: {
+            Authorization: `Bearer ${Userfront.accessToken()}`,
+          },
+        })
+        .then(({ data }) => {
+          console.log(data);
+          setResults(data.results);
+        });
+    }
+  });
   if (!isLoggedIn()) return <Redirect to={{ pathname: "/login" }} />;
   return (
     <div className="container py-5">
       <h2>Results</h2>
+      <pre>{results}</pre>
     </div>
   );
 }

@@ -83,6 +83,7 @@ j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
       }
     );
 
+    let res = {};
     try {
       // Perform a GET request to /survey-responses
       await ax.get("/survey-responses", {
@@ -91,24 +92,25 @@ j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
         },
       });
     } catch (error) {
-      // Check that the server returns a 401 status code
-      const { status, data } = error.response;
-      expect(status).to.equal(401);
-      expect(data).to.equal("Unauthorized");
+      res = error.response;
     }
+    // Check that the server returned a 401 status code
+    expect(res.status).to.equal(401);
+    expect(res.data).to.equal("Unauthorized");
     return Promise.resolve();
   });
 
   it("GET /survey-responses should return 401 if no authorization header is present", async () => {
+    let res = {};
     try {
       // Perform a GET request to /survey-responses
       await ax.get("/survey-responses");
     } catch (error) {
-      // Check that the server returns a 401 status code
-      const { status, data } = error.response;
-      expect(status).to.equal(401);
-      expect(data).to.equal("Unauthorized");
+      res = error.response;
     }
+    // Check that the server returned a 401 status code
+    expect(res.status).to.equal(401);
+    expect(res.data).to.equal("Unauthorized");
     return Promise.resolve();
   });
 
@@ -163,15 +165,16 @@ j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
       },
     };
 
+    let res = {};
     try {
       // Perform a POST request to /survey-responses
       await ax.post("/survey-responses", payload);
-    } catch (err) {
-      // Check that the server returns a 401 status code
-      const { status, data } = err.response;
-      expect(status).to.equal(401);
-      expect(data).to.equal("Unauthorized");
+    } catch (error) {
+      res = error.response;
     }
+    // Check that the server returned a 401 status code
+    expect(res.status).to.equal(401);
+    expect(res.data).to.equal("Unauthorized");
 
     return Promise.resolve();
   });
@@ -196,6 +199,7 @@ j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
       },
     };
 
+    let res = {};
     try {
       // Perform a POST request to /survey-responses
       const { data, status } = await ax.post("/survey-responses", payload, {
@@ -203,12 +207,12 @@ j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
           authorization: `Bearer ${token}`,
         },
       });
-    } catch (err) {
-      // Check that the server returns a 401 status code
-      const { status, data } = err.response;
-      expect(status).to.equal(401);
-      expect(data).to.equal("Unauthorized");
+    } catch (error) {
+      res = error.response;
     }
+    // Check that the server returned a 401 status code
+    expect(res.status).to.equal(401);
+    expect(res.data).to.equal("Unauthorized");
 
     return Promise.resolve();
   });
@@ -240,6 +244,7 @@ j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
       },
     };
 
+    let res = {};
     try {
       // Perform a POST request to /survey-responses
       const { data, status } = await ax.post("/survey-responses", payload, {
@@ -247,12 +252,12 @@ j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
           authorization: `Bearer ${token}`,
         },
       });
-    } catch (err) {
-      // Check that the server returns a 401 status code
-      const { status, data } = err.response;
-      expect(status).to.equal(401);
-      expect(data).to.equal("Unauthorized");
+    } catch (error) {
+      res = error.response;
     }
+    // Check that the server returned a 401 status code
+    expect(res.status).to.equal(401);
+    expect(res.data).to.equal("Unauthorized");
 
     return Promise.resolve();
   });

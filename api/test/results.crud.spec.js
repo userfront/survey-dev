@@ -40,7 +40,7 @@ describe("Results endpoint", () => {
 
     // Check that the server returned the results
     expect(status).to.equal(200);
-    expect(data).to.deep.equal({ results: {} });
+    expect(data).to.deep.equal({ results: { data: [] } });
     return Promise.resolve();
   });
 
@@ -59,37 +59,74 @@ describe("Results endpoint", () => {
       Test.rsaPrivateKey,
       {
         algorithm: "RS256",
-        expiresIn: -1,
       }
     );
 
+    let res = {};
     try {
-      // Perform a POST request to /results
-      const { data, status } = await ax.post("/results", {
+      // Perform a GET request to /results
+      await ax.get("/results", {
         headers: {
           authorization: `Bearer ${token}`,
         },
       });
-    } catch (err) {
-      // Check that the server returns a 401 status code
-      const { status, data } = err.response;
-      expect(status).to.equal(401);
-      expect(data).to.equal("Unauthorized");
+    } catch (error) {
+      res = error.response;
     }
+    // Check that the server returned a 401 status code
+    expect(res.status).to.equal(401);
+    expect(res.data).to.equal("Unauthorized");
+
+    return Promise.resolve();
+  });
+
+  it("GET /results should return 401 for an admin user in a different tenant", async () => {
+    // Create an admin JWT for another tenant
+    const token = jwt.sign(
+      {
+        userId: 22,
+        authorization: {
+          "12fake34": {
+            tenantId: "12fake34", // Different tenant
+            roles: ["admin"],
+          },
+        },
+      },
+      Test.rsaPrivateKey,
+      {
+        algorithm: "RS256",
+      }
+    );
+
+    let res = {};
+    try {
+      // Perform a GET request to /results
+      await ax.get("/results", {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (error) {
+      res = error.response;
+    }
+    // Check that the server returned a 401 status code
+    expect(res.status).to.equal(401);
+    expect(res.data).to.equal("Unauthorized");
 
     return Promise.resolve();
   });
 
   it("GET /results should return 401 if no authorization header is present", async () => {
+    let res = {};
     try {
       // Perform a GET request to /results
       await ax.get("/results");
     } catch (error) {
-      // Check that the server returns a 401 status code
-      const { status, data } = error.response;
-      expect(status).to.equal(401);
-      expect(data).to.equal("Unauthorized");
+      res = error.response;
     }
+    // Check that the server returned a 401 status code
+    expect(res.status).to.equal(401);
+    expect(res.data).to.equal("Unauthorized");
     return Promise.resolve();
   });
 
@@ -112,20 +149,20 @@ describe("Results endpoint", () => {
       }
     );
 
+    let res = {};
     try {
-      // Perform a POST request to /results
-      const { data, status } = await ax.post("/results", {
+      // Perform a GET request to /results
+      await ax.get("/results", {
         headers: {
           authorization: `Bearer ${token}`,
         },
       });
-    } catch (err) {
-      // Check that the server returns a 401 status code
-      const { status, data } = err.response;
-      expect(status).to.equal(401);
-      expect(data).to.equal("Unauthorized");
+    } catch (error) {
+      res = error.response;
     }
-
+    // Check that the server returned a 401 status code
+    expect(res.status).to.equal(401);
+    expect(res.data).to.equal("Unauthorized");
     return Promise.resolve();
   });
 
@@ -155,6 +192,7 @@ j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
       }
     );
 
+    let res = {};
     try {
       // Perform a GET request to /results
       await ax.get("/results", {
@@ -163,11 +201,11 @@ j54LxJp8HjQXvbs/Tr7OSu3CEK7pc9uTZ6RkyD1oGw==
         },
       });
     } catch (error) {
-      // Check that the server returns a 401 status code
-      const { status, data } = error.response;
-      expect(status).to.equal(401);
-      expect(data).to.equal("Unauthorized");
+      res = error.response;
     }
+    // Check that the server returned a 401 status code
+    expect(res.status).to.equal(401);
+    expect(res.data).to.equal("Unauthorized");
     return Promise.resolve();
   });
 });
