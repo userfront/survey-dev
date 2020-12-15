@@ -11,7 +11,7 @@ const rsaPublicKey = process.env.RSA_PUBLIC_KEY.replace("\\n", "\n");
 // Set up sequelize
 const { sequelize } = require("./api/database/instance.js");
 
-app.all("/survey-responses", function (req, res, next) {
+app.all("*", function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();

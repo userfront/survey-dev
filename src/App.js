@@ -228,7 +228,7 @@ function Results() {
   return (
     <div className="container py-5">
       <h2>Results</h2>
-      <pre>{results}</pre>
+      <pre>{JSON.stringify(results)}</pre>
     </div>
   );
 }
