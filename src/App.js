@@ -47,14 +47,13 @@ function App() {
   return (
     <Router>
       <div>
-        <nav className="navbar navbar-expand-lg bg-white py-4 shadow">
+        <nav className="navbar navbar-expand bg-white py-4 shadow">
           <div className="container">
+            <NavLink exact to="/" className="btn btn-outline-primary mr-4">
+              survey.dev
+            </NavLink>
+
             <ul className="navbar-nav mr-auto">
-              <li className="nav-item">
-                <NavLink exact to="/" className="btn btn-outline-primary mr-4">
-                  survey.dev
-                </NavLink>
-              </li>
               <li className="nav-item">
                 <NavLink to="/survey" className="nav-link">
                   Survey
@@ -143,9 +142,9 @@ function Landing() {
 }
 
 function Survey() {
-  const [response, setResponse] = useState({});
+  const [response, setResponse] = useState();
   useEffect(() => {
-    if (!response.id) {
+    if (!response) {
       axios
         .get(`${apiRoot}/survey-responses`, {
           headers: {
@@ -154,13 +153,13 @@ function Survey() {
         })
         .then(({ data }) => {
           if (data && data.surveyResponses) {
-            setResponse(data.surveyResponses[0]);
+            setResponse(data.surveyResponses[0] || {});
           }
         });
     }
   });
   if (!isLoggedIn()) return <Redirect to={{ pathname: "/login" }} />;
-  if (response.data) {
+  if (response && response.data) {
     const surveyView = new SurveyJS.Model(questions);
     surveyView.data = response.data;
     surveyView.mode = "display";
@@ -211,18 +210,16 @@ function LoginLogout() {
 function Results() {
   const [results, setResults] = useState({});
   useEffect(() => {
-    if (!results.data) {
-      axios
-        .get(`${apiRoot}/results`, {
-          headers: {
-            Authorization: `Bearer ${Userfront.accessToken()}`,
-          },
-        })
-        .then(({ data }) => {
-          console.log(data);
-          setResults(data.results);
-        });
-    }
+    if (results.data) return;
+    axios
+      .get(`${apiRoot}/results`, {
+        headers: {
+          Authorization: `Bearer ${Userfront.accessToken()}`,
+        },
+      })
+      .then(({ data }) => {
+        setResults(data.results);
+      });
   });
   if (!isLoggedIn()) return <Redirect to={{ pathname: "/login" }} />;
   return (
