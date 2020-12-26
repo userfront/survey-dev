@@ -5,6 +5,7 @@ const { Sequelize } = require("sequelize");
 const db = {};
 
 if (process.env.NODE_ENV === "production") {
+  console.log("------- A ---------");
   console.log(process.env.RDS_DB_NAME);
   console.log(process.env.RDS_USERNAME);
   console.log(process.env.RDS_HOSTNAME);
