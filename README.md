@@ -10,9 +10,9 @@ At a high level, this tutorial uses the following tools:
 | :----------------------------------------------------------------------- | --- | :-------------------------------------------------------------------------- |
 | [React](https://reactjs.org/) <br> User interface builder                |     | [Node](https://nodejs.org/) <br > JavaScript runtime                        |
 | [React Router](https://reactrouter.com/) <br> Client-side routing        |     | [Express.js](https://expressjs.com/) <br> Web server framework              |
-| [SurveyJS](https://surveyjs.io/) <br> Submit and display surveys         |     | [Postgres](https://www.postgresql.org/) <br> Database                       |
-| [Axios](https://github.com/axios/axios) <br> Make API requests           |     | [Sequelize](https://sequelize.org/) <br> ORM (helps write database queries) |
-| [Userfront](https://userfront.com/) <br> Authentication & access control |     | [Jest](https://jestjs.io/) <br> Testing                                     |
+| [Axios](https://github.com/axios/axios) <br> Make API requests           |     | [Postgres](https://www.postgresql.org/) <br> Database                       |
+| [Userfront](https://userfront.com/) <br> Authentication & access control |     | [Sequelize](https://sequelize.org/) <br> ORM (helps write database queries) |
+| [SurveyJS](https://surveyjs.io/) <br> Submit and display surveys         |     | [Jest](https://jestjs.io/) <br> Testing                                     |
 
 ### Table of contents
 
