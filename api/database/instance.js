@@ -11,6 +11,7 @@ if (process.env.NODE_ENV === "production") {
   process.env.DATABASE_HOST = process.env.RDS_HOSTNAME;
   process.env.DATABASE_PORT = process.env.RDS_PORT;
   process.env.DATABASE_DIALECT = "postgres";
+  console.log("RDS", process.env.RDS_DB_NAME, process.env.RDS_USERNAME);
 }
 
 const sequelize = new Sequelize(
