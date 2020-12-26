@@ -26,7 +26,7 @@ app.get("/survey-responses", async (req, res) => {
     const verified = jwt.verify(token, rsaPublicKey, {
       algorithm: "RS256",
     });
-    console.log("ver", verified);
+    console.log("verA", verified);
     const surveyResponses = await sequelize.models.SurveyResponse.findAll({
       where: {
         userId: verified.userId,
@@ -34,7 +34,7 @@ app.get("/survey-responses", async (req, res) => {
     });
     return res.send({ surveyResponses });
   } catch (error) {
-    console.log("err", error);
+    console.log("errB", error);
     return res.status(401).send("Unauthorized");
   }
 });
@@ -45,14 +45,12 @@ app.post("/survey-responses", async (req, res) => {
     const verified = jwt.verify(token, rsaPublicKey, {
       algorithm: "RS256",
     });
-    console.log("ver", verified);
     const surveyResponse = await sequelize.models.SurveyResponse.create({
       userId: verified.userId,
       data: req.body.data,
     });
     return res.send(surveyResponse);
   } catch (error) {
-    console.log("err", error);
     return res.status(401).send("Unauthorized");
   }
 });
