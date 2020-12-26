@@ -15,4 +15,12 @@ module.exports = {
     port: process.env.DATABASE_PORT,
     dialect: process.env.DATABASE_DIALECT,
   },
+  migration: {
+    database: "postgres",
+    username: "postgres",
+    password: "",
+    host: "aa1dixnkdt7lfxi.cbets7yhwixt.us-east-1.rds.amazonaws.com",
+    port: 5432,
+    dialect: "postgres",
+  },
 };

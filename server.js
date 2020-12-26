@@ -34,7 +34,7 @@ app.get("/survey-responses", async (req, res) => {
     });
     return res.send({ surveyResponses });
   } catch (error) {
-    console.log("error", error);
+    console.log("err", error);
     return res.status(401).send("Unauthorized");
   }
 });
@@ -52,7 +52,7 @@ app.post("/survey-responses", async (req, res) => {
     });
     return res.send(surveyResponse);
   } catch (error) {
-    console.log("error", error);
+    console.log("err", error);
     return res.status(401).send("Unauthorized");
   }
 });
