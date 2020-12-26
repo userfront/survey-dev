@@ -6,7 +6,10 @@ const jwt = require("jsonwebtoken");
 
 app.use(bodyParser.json());
 
-const rsaPublicKey = process.env.RSA_PUBLIC_KEY.replace("\\n", "\n");
+const rsaPublicKey =
+  process.env.NODE_ENV === "production"
+    ? Buffer.from(process.env.RSA_PUBLIC_KEY, "base64").toString()
+    : process.env.RSA_PUBLIC_KEY.replace("\\n", "\n");
 
 // Set up sequelize
 const { sequelize } = require("./api/database/instance.js");
