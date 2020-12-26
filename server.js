@@ -56,6 +56,7 @@ app.post("/survey-responses", async (req, res) => {
 app.get("/results", async (req, res) => {
   try {
     const token = req.headers.authorization.replace("Bearer ", "");
+    console.log("token", token);
     const verified = jwt.verify(token, rsaPublicKey, {
       algorithm: "RS256",
     });
@@ -72,6 +73,7 @@ app.get("/results", async (req, res) => {
       },
     });
   } catch (error) {
+    console.log("error", error);
     return res.status(401).send("Unauthorized");
   }
 });
