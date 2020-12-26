@@ -1,11 +1,11 @@
 module.exports = {
   production: {
-    database: process.env.RDS_DB_NAME,
-    username: process.env.RDS_USERNAME,
-    password: process.env.RDS_PASSWORD,
-    host: process.env.RDS_HOSTNAME,
-    port: process.env.RDS_PORT,
-    dialect: "postgres",
+    database: process.env.DATABASE_NAME,
+    username: process.env.DATABASE_USERNAME,
+    password: process.env.DATABASE_PASSWORD,
+    host: process.env.DATABASE_HOST,
+    port: process.env.DATABASE_PORT,
+    dialect: process.env.DATABASE_DIALECT,
   },
   development: {
     database: process.env.DATABASE_NAME,
@@ -16,9 +16,9 @@ module.exports = {
     dialect: process.env.DATABASE_DIALECT,
   },
   migration: {
-    database: "postgres",
+    database: "ebdb",
     username: "postgres",
-    password: "",
+    // password: "",
     host: "aa1dixnkdt7lfxi.cbets7yhwixt.us-east-1.rds.amazonaws.com",
     port: 5432,
     dialect: "postgres",
