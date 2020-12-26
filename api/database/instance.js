@@ -4,6 +4,16 @@ const modelsDirectory = path.join(__dirname, "../models");
 const { Sequelize } = require("sequelize");
 const db = {};
 
+if (process.env.NODE_ENV === "production") {
+  console.log("db", process.env.RDS_HOSTNAME);
+  process.env.DATABASE_NAME = process.env.RDS_DB_NAME;
+  process.env.DATABASE_USERNAME = process.env.RDS_USERNAME;
+  process.env.DATABASE_PASSWORD = process.env.RDS_PASSWORD;
+  process.env.DATABASE_HOST = process.env.RDS_HOSTNAME;
+  process.env.DATABASE_PORT = process.env.RDS_PORT;
+  process.env.DATABASE_DIALECT = "postgres";
+}
+
 const sequelize = new Sequelize(
   process.env.DATABASE_NAME,
   process.env.DATABASE_USERNAME,
