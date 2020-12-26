@@ -26,7 +26,6 @@ app.get("/survey-responses", async (req, res) => {
     const verified = jwt.verify(token, rsaPublicKey, {
       algorithm: "RS256",
     });
-    console.log("verA", verified);
     const surveyResponses = await sequelize.models.SurveyResponse.findAll({
       where: {
         userId: verified.userId,
@@ -34,7 +33,7 @@ app.get("/survey-responses", async (req, res) => {
     });
     return res.send({ surveyResponses });
   } catch (error) {
-    console.log("errB", error);
+    console.log("errC", error);
     return res.status(401).send("Unauthorized");
   }
 });
