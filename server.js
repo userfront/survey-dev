@@ -56,10 +56,10 @@ app.post("/survey-responses", async (req, res) => {
 app.get("/results", async (req, res) => {
   try {
     const token = req.headers.authorization.replace("Bearer ", "");
-    console.log("token", token);
     const verified = jwt.verify(token, rsaPublicKey, {
       algorithm: "RS256",
     });
+    console.log("verified", verified);
     if (
       !verified.authorization ||
       !verified.authorization["5xbpy4nz"] ||
