@@ -33,7 +33,6 @@ app.get("/survey-responses", async (req, res) => {
     });
     return res.send({ surveyResponses });
   } catch (error) {
-    console.log("errC", error);
     return res.status(401).send("Unauthorized");
   }
 });
