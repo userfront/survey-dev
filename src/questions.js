@@ -39,33 +39,177 @@ const technologyChoices = [
   "Free tools",
 ];
 
-const questions = {
-  // showPageNumbers: false,
-  showProgressBar: "top",
-  progressBarType: "buttons",
-  pages: [
+const workerPage = {
+  title: "Your work setup in 2020",
+  description:
+    "These questions help determine pay trends across locations and technologies.",
+  navigationTitle: "Your setup",
+  name: "worker",
+  questions: [
     {
-      title: "Your work in 2020",
-      description:
-        "These questions help determine pay trends across clients and contracts.",
-      navigationTitle: "Top client",
-      navigationDescription: "Your top client",
-      name: "clients",
-      questions: [
+      title: "Where were you located in 2020?",
+      type: "panel",
+      name: "workerLocationPanel",
+      elements: [
+        {
+          title: "Your region",
+          type: "dropdown",
+          name: "workerRegion",
+          choices: ["Africa", "Americas", "Asia", "Europe", "Oceania"],
+        },
+        {
+          title: "Your country",
+          type: "dropdown",
+          name: "workerCountry",
+          placeHolder: "Choose your",
+          choicesByUrl: {
+            url: "https://restcountries.eu/rest/v2/region/{workerRegion}",
+            valueName: "name",
+          },
+        },
+        {
+          title: "Your city",
+          type: "text",
+          name: "workerCity",
+          placeHolder: "Your city",
+        },
+      ],
+    },
+    {
+      title: "How did you find work in 2020?",
+      type: "panel",
+      name: "workerMarketingPanel",
+      elements: [
+        {
+          title: "Methods",
+          name: "workerMarketingMethods",
+          type: "checkbox",
+          colCount: 4,
+          hasOther: true,
+          choices: [
+            "Upwork",
+            "Referral from client",
+            "Referral from network",
+            "Repeat clients",
+            "Own website",
+            "Online advertising",
+            "Offline advertising",
+          ],
+        },
+      ],
+    },
+    {
+      title: "What technologies did you use in 2020?",
+      type: "panel",
+      name: "workerTechnologyPanel",
+      elements: [
+        {
+          title: "Frontend",
+          type: "checkbox",
+          name: "workerFrontend",
+          hasOther: true,
+          colCount: 4,
+          choices: frontendTechnologies,
+        },
+        {
+          title: "Backend",
+          type: "checkbox",
+          name: "workerBackend",
+          colCount: 4,
+          hasOther: true,
+          choices: backendTechnologies,
+        },
+        {
+          title: "Platform",
+          type: "checkbox",
+          name: "workerInfra",
+          colCount: 4,
+          hasOther: true,
+          choices: platformTechnologies,
+        },
+      ],
+    },
+  ],
+};
+
+const payPage = {
+  title: "Your pay in 2020",
+  description:
+    "These questions help determine pay trends across clients and contracts.",
+  navigationTitle: "Pay",
+  name: "pay",
+  questions: [
+    {
+      title: "Earnings",
+      type: "panel",
+      name: "payPanel",
+      elements: [
+        {
+          title:
+            "How much did you earn in 2020 from contract web projects, before tax?",
+          type: "text",
+          inputType: "number",
+          name: "payTotal",
+          placeHolder: "$",
+        },
+        {
+          title:
+            "What percentage of your total earnings in 2020 were from contract web projects?",
+          type: "dropdown",
+          name: "payPercentage",
+          colCount: 5,
+          choices: [
+            "100%",
+            "90%",
+            "80%",
+            "70%",
+            "60%",
+            "50%",
+            "40%",
+            "30%",
+            "20%",
+            "10%",
+            "0%",
+          ],
+        },
         {
           title: "How many clients did you have in 2020?",
           type: "text",
           inputType: "number",
-          name: "workClientCount",
+          name: "payClientCount",
           placeHolder: "Number of clients",
         },
         {
           title: "How many contracts did you have in 2020?",
           type: "text",
           inputType: "number",
-          name: "workContractCount",
+          name: "payContractCount",
           placeHolder: "Number of contracts",
         },
+        {
+          title: "Did you have difficulty getting paid by any clients in 2020?",
+          type: "boolean",
+          name: "payDifficulty",
+        },
+      ],
+    },
+  ],
+};
+
+const questions = {
+  // showPageNumbers: false,
+  showProgressBar: "top",
+  progressBarType: "buttons",
+  pages: [
+    workerPage,
+    payPage,
+    {
+      title: "Your work in 2020",
+      description:
+        "These questions help determine pay trends across clients and contracts.",
+      navigationTitle: "Top client",
+      name: "clients",
+      questions: [
         {
           type: "html",
           name: "info",
@@ -144,6 +288,29 @@ const questions = {
               colCount: 3,
               hasOther: true,
               choices: technologyChoices,
+            },
+            {
+              title: "Top client location",
+              type: "panel",
+              name: "workTopClientLocation",
+              elements: [
+                {
+                  title: "Your top client's region",
+                  type: "dropdown",
+                  name: "workTopClientRegion",
+                  choices: ["Africa", "Americas", "Asia", "Europe", "Oceania"],
+                },
+                {
+                  title: "Your top client's country",
+                  type: "dropdown",
+                  name: "workTopClientCountry",
+                  choicesByUrl: {
+                    url:
+                      "https://restcountries.eu/rest/v2/region/{workerRegion}",
+                    valueName: "name",
+                  },
+                },
+              ],
             },
             {
               title: "What industry is this client in?",
@@ -258,117 +425,6 @@ const questions = {
               title: "Did you have difficulty getting paid by this client?",
               type: "boolean",
               name: "workBottomClientPayDifficulty",
-            },
-          ],
-        },
-      ],
-    },
-    {
-      title: "Your work setup in 2020",
-      description:
-        "These questions help determine pay trends across locations and technologies.",
-      navigationTitle: "Your setup",
-      navigationDescription: "Something",
-      name: "worker",
-      questions: [
-        {
-          title: "Your location in 2020",
-          type: "panel",
-          name: "workerLocation",
-          elements: [
-            {
-              title: "Your region",
-              type: "dropdown",
-              name: "workerRegion",
-              choices: ["Africa", "Americas", "Asia", "Europe", "Oceania"],
-            },
-            {
-              title: "Your country",
-              type: "dropdown",
-              name: "workerCountry",
-              placeHolder: "Choose your",
-              choicesByUrl: {
-                url: "https://restcountries.eu/rest/v2/region/{workerRegion}",
-                valueName: "name",
-              },
-            },
-            {
-              title: "Your city",
-              type: "text",
-              name: "workerCity",
-              placeHolder: "Your city",
-            },
-          ],
-        },
-        {
-          title: "What technologies did you use in 2020?",
-          type: "panel",
-          name: "workerTechnology",
-          elements: [
-            {
-              title: "Frontend",
-              type: "checkbox",
-              name: "workerFrontend",
-              hasOther: true,
-              colCount: 4,
-              choices: frontendTechnologies,
-            },
-            {
-              title: "Backend",
-              type: "checkbox",
-              name: "workerBackend",
-              colCount: 4,
-              hasOther: true,
-              choices: backendTechnologies,
-            },
-            {
-              title: "Platform",
-              type: "checkbox",
-              name: "workerInfra",
-              colCount: 4,
-              hasOther: true,
-              choices: platformTechnologies,
-            },
-          ],
-        },
-        {
-          title: "Earnings",
-          type: "panel",
-          name: "workerPay",
-          elements: [
-            {
-              title:
-                "How much did you earn in 2020 from contract web projects, before tax?",
-              type: "text",
-              inputType: "number",
-              name: "workerPayTotal",
-              placeHolder: "$",
-            },
-            {
-              title:
-                "What percentage of your total earnings in 2020 were from contract web projects?",
-              type: "dropdown",
-              name: "workerPayPercentage",
-              colCount: 5,
-              choices: [
-                "100%",
-                "90%",
-                "80%",
-                "70%",
-                "60%",
-                "50%",
-                "40%",
-                "30%",
-                "20%",
-                "10%",
-                "0%",
-              ],
-            },
-            {
-              title:
-                "Did you have difficulty getting paid by any clients in 2020?",
-              type: "boolean",
-              name: "workerPayDifficulty",
             },
           ],
         },
