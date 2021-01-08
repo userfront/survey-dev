@@ -39,7 +39,23 @@ const technologyChoices = [
   "Free tools",
 ];
 
-const industries = [];
+const industries = [
+  "Natural Resources & Mining",
+  "Construction",
+  "Manufacturing",
+  "Wholesale Trade",
+  "Retail Trade",
+  "Transportation & Warehousing",
+  "Utilities",
+  "Information & Publishing",
+  "Finance & Insurance",
+  "Real Estate",
+  "Professional Services",
+  "Education",
+  "Healthcare",
+  "Leisure & Hospitality",
+  "Other Services",
+];
 
 const numberSettings = {
   type: "text",
@@ -295,6 +311,7 @@ const topClientPage = {
       title: "What industry is this client in?",
       type: "dropdown",
       name: "topClientIndustry",
+      choices: industries,
     },
     {
       title: "How many employees work at your top paying client?",
@@ -310,34 +327,33 @@ const topClientPage = {
   ],
 };
 
-const bottomClient = {
+const bottomClientPage = {
   title: "Your bottom paying client",
-  type: "panel",
-  name: "workBottomClientPanel",
   description: "The client you earned the least from in 2020",
-  visibleIf: "{workClientCount} > 1",
+  navigationTitle: "Bottom client",
+  name: "bottomClient",
+  // visibleIf: "{payClientCount} > 1",
   questions: [
     {
       title:
         "How much did you earn from your bottom paying client in 2020, before tax?",
-      type: "text",
-      inputType: "number",
       placeHolder: "$ Amount you earned",
-      name: "workBottomClientEarnings",
+      name: "bottomClientEarnings",
+      step: 100,
+      ...numberSettings,
     },
     {
       title:
         "How many separate contracts did you work on for your bottom paying client in 2020?",
-      type: "text",
-      inputType: "number",
       placeHolder: "Number of contracts",
-      name: "workBottomClientNumberOfContracts",
+      name: "bottomClientNumberOfContracts",
+      ...numberSettings,
     },
     {
       title:
         "How long was the longest contract for your bottom paying client in 2020?",
       type: "dropdown",
-      name: "workBottomClientLength",
+      name: "bottomClientLength",
       choices: [
         "Less than a week",
         "1-4 weeks",
@@ -354,61 +370,111 @@ const bottomClient = {
       title:
         "What tools did you personally use on the frontend for this client?",
       type: "checkbox",
-      name: "workBottomClientFrontend",
+      name: "bottomClientFrontend",
       hasOther: true,
       colCount: 4,
       choices: frontendTechnologies,
+      choicesOrder: "random",
     },
     {
       title:
         "What tools did you personally use on the backend for this client?",
       type: "checkbox",
-      name: "workBottomClientBackend",
+      name: "bottomClientBackend",
       colCount: 4,
       hasOther: true,
       choices: backendTechnologies,
+      choicesOrder: "random",
     },
     {
       title: "What platform(s) does this client use?",
       type: "checkbox",
-      name: "workBottomClientInfra",
+      name: "bottomClientInfra",
       colCount: 4,
       hasOther: true,
       choices: platformTechnologies,
+      choicesOrder: "random",
     },
     {
       title:
         "Which technology choices did you influence at your bottom paying client?",
       type: "checkbox",
-      name: "workBottomClientTechnology",
+      name: "bottomClientTechnology",
       colCount: 3,
       hasOther: true,
       choices: technologyChoices,
+      choicesOrder: "random",
+    },
+    {
+      title: "Top client location",
+      type: "panel",
+      name: "bottomClientLocation",
+      elements: [
+        {
+          title: "Your bottom client's region",
+          type: "dropdown",
+          name: "bottomClientRegion",
+          choices: ["Africa", "Americas", "Asia", "Europe", "Oceania"],
+        },
+        {
+          title: "Your bottom client's country",
+          type: "dropdown",
+          name: "bottomClientCountry",
+          choicesByUrl: {
+            url: "https://restcountries.eu/rest/v2/region/{bottomClientRegion}",
+            valueName: "name",
+          },
+        },
+      ],
     },
     {
       title: "What industry is this client in?",
       type: "dropdown",
-      name: "workBottomClientIndustry",
+      name: "bottomClientIndustry",
+      choices: industries,
     },
     {
       title: "How many employees work at your bottom paying client?",
       type: "dropdown",
-      name: "workBottomClientEmployeeCount",
+      name: "bottomClientEmployeeCount",
       choices: ["1", "2-19", "20-99", "100-999", "1000 or more"],
     },
     {
       title: "Did you have difficulty getting paid by this client?",
       type: "boolean",
-      name: "workBottomClientPayDifficulty",
+      name: "bottomClientPayDifficulty",
+    },
+  ],
+};
+
+const finalPage = {
+  title: "Final page",
+  description: "Final questions",
+  navigationTitle: "Complete",
+  name: "final",
+  questions: [
+    {
+      title: "Are there any clients you would like to name as good clients?",
+      type: "comment",
+      name: "finalGoodClients",
+    },
+    {
+      title: "Are there any clients you would like to name as bad clients?",
+      type: "comment",
+      name: "finalBadClients",
+    },
+    {
+      title: "Anything else you would like to add?",
+      type: "comment",
     },
   ],
 };
 
 const questions = {
-  // showPageNumbers: false,
+  showQuestionNumbers: "off",
   showProgressBar: "top",
   progressBarType: "buttons",
-  pages: [workerPage, payPage, topClientPage],
+  pages: [workerPage, payPage, topClientPage, bottomClientPage, finalPage],
 };
 
 export default questions;
