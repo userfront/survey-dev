@@ -28,6 +28,9 @@ const Login = Userfront.build({
 
 const isLoggedIn = () => Userfront.accessToken();
 
+const defaultThemeColors = SurveyJS.StylesManager.ThemeColors["modern"];
+defaultThemeColors["$main-color"] = "#007bff";
+
 SurveyJS.StylesManager.applyTheme("modern");
 const survey = new SurveyJS.Model(questions);
 
@@ -165,13 +168,13 @@ function Survey() {
     surveyView.mode = "display";
 
     return (
-      <div className="container">
+      <div className="container py-4">
         <SurveyJS.Survey model={surveyView} />
       </div>
     );
   } else {
     return (
-      <div className="container">
+      <div className="container py-4">
         <SurveyJS.Survey model={survey} />
       </div>
     );

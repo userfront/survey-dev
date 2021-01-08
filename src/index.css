@@ -11,3 +11,22 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Survey top navigation styling */
+ul.sv_progress-buttons__list li.sv_progress-buttons__list-element--current::before {
+  border-color: #419dff;
+}
+ul.sv_progress-buttons__list li::before {
+  border-color: #92c5fc;
+  background-color: #92c5fc;
+}
+ul.sv_progress-buttons__list li.sv_progress-buttons__list-element--passed::before {
+  border-color: #419dff;
+  background-color: #419dff;
+}
+ul.sv_progress-buttons__list li.sv_progress-buttons__list-element--passed + li::after {
+  background-color: #92c5fc;
+}
+ul.sv_progress-buttons__list li.sv_progress-buttons__list-element--passed.sv_progress-buttons__list-element--current::before {
+  border-color: #419dff;
+}

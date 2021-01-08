@@ -103,7 +103,7 @@ const workerPage = {
       title: "How did you find work in 2020?",
       name: "workerMarketingMethods",
       type: "checkbox",
-      colCount: 4,
+      colCount: 3,
       hasOther: true,
       choices: [
         "Upwork",
@@ -156,7 +156,7 @@ const workerPage = {
 const payPage = {
   title: "Your pay in 2020",
   description:
-    "These questions help determine pay trends across clients and contracts.",
+    "These questions help determine trends across clients and contracts.",
   navigationTitle: "Pay",
   name: "pay",
   questions: [
@@ -210,7 +210,8 @@ const payPage = {
 
 const topClientPage = {
   title: "Your top paying client",
-  description: "The client you earned the most from in 2020",
+  description:
+    "These questions are about the client you earned the most from in 2020.",
   navigationTitle: "Top client",
   name: "topClient",
   questions: [
@@ -329,7 +330,8 @@ const topClientPage = {
 
 const bottomClientPage = {
   title: "Your bottom paying client",
-  description: "The client you earned the least from in 2020",
+  description:
+    "These questions are about the client you earned the least from in 2020. If you only had 1 client in 2020, you can skip this section.",
   navigationTitle: "Bottom client",
   name: "bottomClient",
   // visibleIf: "{payClientCount} > 1",
@@ -448,24 +450,34 @@ const bottomClientPage = {
 };
 
 const finalPage = {
-  title: "Final page",
-  description: "Final questions",
-  navigationTitle: "Complete",
+  title: "Wrap up",
+  navigationTitle: "Wrap up",
   name: "final",
   questions: [
     {
       title: "Are there any clients you would like to name as good clients?",
+      description: "If we get enough responses, we may highlight good clients.",
       type: "comment",
       name: "finalGoodClients",
     },
     {
       title: "Are there any clients you would like to name as bad clients?",
+      description:
+        "If we get enough responses, we may highlight bad clients (without linking it to you).",
       type: "comment",
       name: "finalBadClients",
     },
     {
-      title: "Anything else you would like to add?",
-      type: "comment",
+      title:
+        "Do you personally know any other web development freelancers or agencies?",
+      type: "boolean",
+      name: "finalKnowOthers",
+    },
+    {
+      type: "html",
+      name: "info",
+      html: `<p>Please consider sharing Survey.dev with them when you're done!</p>`,
+      visibleIf: "{finalKnowOthers}",
     },
   ],
 };
