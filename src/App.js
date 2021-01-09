@@ -271,22 +271,34 @@ function About() {
         that you could use in professional work.
       </p>
       <p>
-        <a href="https://github.com/tyrw/survey-dev-tutorial" target="_blank">
+        <a
+          href="https://github.com/tyrw/survey-dev-tutorial"
+          target="_blank"
+          rel="noreferrer"
+        >
           See the tutorial →
         </a>
       </p>
       <h5 class="mt-5 mb-3">Contributing</h5>
       <p>
         You can contribute to this project by opening an issue on{" "}
-        <a href="https://github.com/tyrw/survey-dev" target="_blank">
+        <a
+          href="https://github.com/tyrw/survey-dev"
+          target="_blank"
+          rel="noreferrer"
+        >
           /survey-dev
         </a>{" "}
         or{" "}
-        <a href="https://github.com/tyrw/survey-dev-tutorial" target="_blank">
+        <a
+          href="https://github.com/tyrw/survey-dev-tutorial"
+          target="_blank"
+          rel="noreferrer"
+        >
           /survey-dev-tutorial
         </a>
         . This project was started by{" "}
-        <a href="https://github.com/tyrw" target="_blank">
+        <a href="https://github.com/tyrw" target="_blank" rel="noreferrer">
           @tyrw
         </a>{" "}
         -- feel free to say hi!
