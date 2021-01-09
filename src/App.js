@@ -53,7 +53,7 @@ function App() {
         <nav className="navbar navbar-expand bg-white py-4 shadow">
           <div className="container">
             <NavLink exact to="/" className="btn btn-outline-primary mr-4">
-              survey.dev
+              Survey.dev
             </NavLink>
 
             <ul className="navbar-nav mr-auto">
@@ -90,6 +90,9 @@ function App() {
                 <Signup />
               </div>
             </Route>
+            <Route path="/about">
+              <About />
+            </Route>
             <Route path="/">
               <Landing />
             </Route>
@@ -104,41 +107,47 @@ export default App;
 
 function Landing() {
   return (
-    <div
-      style={{
-        backgroundImage:
-          "url(https://images.pexels.com/photos/1181676/pexels-photo-1181676.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260)",
-        backgroundSize: "cover",
-        backgroundPosition: "right center",
-        minHeight: "100vh",
-      }}
-    >
-      <div className="container">
-        <div className="row py-5">
-          <div className="col-md-6">
-            <div className="card shadow border-0">
-              <div className="card-body">
-                <h1 className="card-title" style={{ fontSize: "1.75rem" }}>
-                  2020 Survey of
-                  <br />
-                  Web Freelancers & Agencies
-                </h1>
-                <div className="my-4">
-                  <Link to="/survey" className="btn btn-primary mr-3">
-                    Survey
-                  </Link>
-                  <Link to="/results" className="btn btn-outline-primary">
-                    Results
-                  </Link>
+    <div>
+      <div
+        style={{
+          backgroundImage:
+            "url(https://images.pexels.com/photos/1181676/pexels-photo-1181676.jpeg?auto=compress&cs=tinysrgb&dpr=3&h=750&w=1260)",
+          backgroundSize: "cover",
+          backgroundPosition: "right center",
+          minHeight: "100vh",
+        }}
+      >
+        <div className="container">
+          <div className="row py-5">
+            <div className="col-md-6">
+              <div className="card shadow border-0">
+                <div className="card-body">
+                  <h1 className="card-title" style={{ fontSize: "1.75rem" }}>
+                    2020 Survey of
+                    <br />
+                    Web Freelancers & Agencies
+                  </h1>
+                  <div className="my-4">
+                    <Link to="/survey" className="btn btn-primary mr-3">
+                      Survey
+                    </Link>
+                    <Link to="/results" className="btn btn-outline-primary">
+                      Results
+                    </Link>
+                  </div>
+                  <p className="card-text">
+                    Take the 2020 survey to share and learn about pay trends
+                    across regions and technologies.
+                  </p>
                 </div>
-                <p className="card-text">
-                  Take the 2020 survey to share and learn about pay trends
-                  across regions and technologies.
-                </p>
               </div>
             </div>
           </div>
         </div>
+      </div>
+      <div className="container py-4 d-flex">
+        <a href="/about">About</a>
+        <span className="ml-auto">Made with {"<3"} in California</span>
       </div>
     </div>
   );
@@ -229,6 +238,59 @@ function Results() {
     <div className="container py-5">
       <h2>Results</h2>
       <pre>{JSON.stringify(results)}</pre>
+    </div>
+  );
+}
+
+function About() {
+  return (
+    <div className="container py-5" style={{ maxWidth: "700px" }}>
+      <h2 class="mb-4">About Survey.dev</h2>
+      <h5 class="mb-3">
+        Survey.dev is built to give web freelancers & agencies better info about
+        the market for their services.
+      </h5>
+      <p>
+        With the data collected in this survey, we hope that web development
+        freelancers & agencies can learn more about the market for their
+        services, allowing them to improve how they spend their time.
+      </p>
+      <p>
+        The results of the survey will be shared directly to anyone who has
+        taken the survey.
+      </p>
+      <p>
+        <a href="/survey">Take the survey →</a>
+      </p>
+
+      <h5 class="mt-5 mb-3">Tutorial</h5>
+      <p>There is also a tutorial for how to build the site itself.</p>
+      <p>
+        It is intended to be a complete guide for developing a{" "}
+        <strong>secure, database-backed, production-ready application</strong>{" "}
+        that you could use in professional work.
+      </p>
+      <p>
+        <a href="https://github.com/tyrw/survey-dev-tutorial" target="_blank">
+          See the tutorial →
+        </a>
+      </p>
+      <h5 class="mt-5 mb-3">Contributing</h5>
+      <p>
+        You can contribute to this project by opening an issue on{" "}
+        <a href="https://github.com/tyrw/survey-dev" target="_blank">
+          /survey-dev
+        </a>{" "}
+        or{" "}
+        <a href="https://github.com/tyrw/survey-dev-tutorial" target="_blank">
+          /survey-dev-tutorial
+        </a>
+        . This project was started by{" "}
+        <a href="https://github.com/tyrw" target="_blank">
+          @tyrw
+        </a>{" "}
+        -- feel free to say hi!
+      </p>
     </div>
   );
 }
