@@ -32,7 +32,27 @@ const defaultThemeColors = SurveyJS.StylesManager.ThemeColors["modern"];
 defaultThemeColors["$main-color"] = "#007bff";
 
 SurveyJS.StylesManager.applyTheme("modern");
-const survey = new SurveyJS.Model(questions);
+// const survey = new SurveyJS.Model(questions);
+const survey = new SurveyJS.Model({
+  navigationTitle: "Pay",
+  name: "pay",
+  questions: [
+    {
+      title:
+        "How much did you earn in 2020 from contract web projects, before tax?",
+      type: "text",
+      inputType: "number",
+      step: 100,
+      name: "payTotal",
+      placeHolder: "$ Amount you earned",
+    },
+  ],
+});
+survey.completedHtml = `
+<p class="pt-2">Thank you!</p>
+<h5>Every response makes the results more accurate.</h5>
+<p>Share by email, LinkedIn, Twitter</p>
+`;
 
 survey.onComplete.add(({ data }) => {
   axios.post(
