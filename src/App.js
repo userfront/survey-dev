@@ -87,6 +87,16 @@ function App() {
             </Route>
             <Route path="/signup">
               <div className="container py-5">
+                <div
+                  className="mx-auto mb-4"
+                  style={{ textAlign: "left", maxWidth: "300px" }}
+                >
+                  Take the 2020 survey to share and learn
+                  <br /> about pay trends in web contract work.
+                  <br />
+                  <br /> We will notify you by email when new results are
+                  posted.
+                </div>
                 <Signup />
               </div>
             </Route>
@@ -170,7 +180,7 @@ function Survey() {
         });
     }
   });
-  if (!isLoggedIn()) return <Redirect to={{ pathname: "/login" }} />;
+  if (!isLoggedIn()) return <Redirect to={{ pathname: "/signup" }} />;
   if (response && response.data) {
     const surveyView = new SurveyJS.Model(questions);
     surveyView.data = response.data;
@@ -205,13 +215,13 @@ function LoginLogout() {
     return (
       <ul className="navbar-nav ml-auto">
         <li className="nav-item">
-          <NavLink to="/login" className="nav-link">
-            Login
+          <NavLink to="/signup" className="nav-link">
+            Signup
           </NavLink>
         </li>
         <li className="nav-item">
-          <NavLink to="/signup" className="nav-link">
-            Signup
+          <NavLink to="/login" className="nav-link">
+            Login
           </NavLink>
         </li>
       </ul>
@@ -233,7 +243,7 @@ function Results() {
         setResults(data.results);
       });
   });
-  if (!isLoggedIn()) return <Redirect to={{ pathname: "/login" }} />;
+  if (!isLoggedIn()) return <Redirect to={{ pathname: "/signup" }} />;
   return (
     <div className="container py-5">
       <h2>Results</h2>
