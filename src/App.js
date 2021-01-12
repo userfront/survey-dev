@@ -56,7 +56,11 @@ function App() {
       <div>
         <nav className="navbar navbar-expand bg-white py-4 shadow">
           <div className="container">
-            <NavLink exact to="/" className="btn btn-outline-primary mr-4">
+            <NavLink
+              exact
+              to="/"
+              className="btn btn-sm btn-outline-primary mr-4"
+            >
               Survey.dev
             </NavLink>
 
@@ -141,18 +145,19 @@ function Landing() {
                     <br />
                     Web Freelancers & Agencies
                   </h1>
+                  <p className="mb-1">Share and learn about:</p>
+                  <ul>
+                    <li>Pay trends by technology</li>
+                    <li>Pay trends by region</li>
+                    <li>Good and bad clients</li>
+                    <li>Best ways to source work</li>
+                  </ul>
+                  <p>Results shared with those who take the survey.</p>
                   <div className="my-4">
-                    <Link to="/survey" className="btn btn-primary mr-3">
-                      Survey
-                    </Link>
-                    <Link to="/results" className="btn btn-outline-primary">
-                      Results
+                    <Link to="/survey" className="btn btn-lg btn-primary px-4">
+                      Take the survey →
                     </Link>
                   </div>
-                  <p className="card-text">
-                    Take the 2020 survey to share and learn about pay trends
-                    across regions and technologies.
-                  </p>
                 </div>
               </div>
             </div>
