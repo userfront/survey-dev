@@ -1,7 +1,7 @@
 import axios from "axios";
 import * as SurveyJS from "survey-react";
 import "survey-react/modern.css";
-// import questions from "./questions.js";
+import questions from "./questions.js";
 import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -12,21 +12,6 @@ import {
   Redirect,
 } from "react-router-dom";
 import Userfront from "@userfront/react";
-const questions = {
-  navigationTitle: "Pay",
-  name: "pay",
-  questions: [
-    {
-      title:
-        "How much did you earn in 2020 from contract web projects, before tax?",
-      type: "text",
-      inputType: "number",
-      step: 100,
-      name: "payTotal",
-      placeHolder: "$ Amount you earned",
-    },
-  ],
-};
 
 const apiRoot =
   process.env.NODE_ENV === "production"
