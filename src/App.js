@@ -159,7 +159,7 @@ function Landing() {
                     <li>Best ways to source work</li>
                   </ul>
                   <p>Results shared with those who take the survey.</p>
-                  <div className="my-4">
+                  <div className="mt-4 mb-2">
                     <Link to="/survey" className="btn btn-lg btn-primary px-4">
                       Take the survey →
                     </Link>
@@ -178,7 +178,10 @@ function Landing() {
           Privacy
         </a>
         <a href="/terms">Terms</a>
-        <span className="ml-auto">Made with {"<3"} in California</span>
+        <span className="ml-auto d-none d-sm-inline">
+          Made with {"<3"} in California
+        </span>
+        <span className="ml-auto d-inline d-sm-none">Made in CA</span>
       </div>
     </div>
   );
