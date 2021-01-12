@@ -283,6 +283,8 @@ function Results() {
         <a
           href="mailto:?subject=Survey.dev&body=I%20took%20the%202020%20survey%20of%20web%20development%20freelancers%20%26%20agencies%3A%0D%0A%0D%0Ahttps%3A%2F%2Fsurvey.dev"
           className="mr-2"
+          target="_blank"
+          rel="noreferrer"
         >
           Email
         </a>{" "}
@@ -290,6 +292,8 @@ function Results() {
         <a
           href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fsurvey.dev"
           className="mx-2"
+          target="_blank"
+          rel="noreferrer"
         >
           LinkedIn
         </a>{" "}
@@ -297,6 +301,8 @@ function Results() {
         <a
           href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fsurvey.dev&text=I%20took%20the%202020%20Survey%20of%20Web%20Development%20Freelancers%20%26%20Agencies"
           className="mx-2"
+          target="_blank"
+          rel="noreferrer"
         >
           Twitter
         </a>
@@ -304,10 +310,29 @@ function Results() {
         <a
           href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fsurvey.dev&t=2020%20Survey%20of%20Web%20Development%20Freelancers%20%26%20Agencies"
           className="mx-2"
+          target="_blank"
+          rel="noreferrer"
         >
           Hacker News
         </a>
       </div>
+
+      <h3 class="mt-5">Tutorial</h3>
+      <p>There is also an in-depth tutorial for how to build this website.</p>
+      <p>
+        It is intended to be a complete guide for developing a{" "}
+        <strong>secure, database-backed, production-ready application</strong>{" "}
+        that you can use in professional work.
+      </p>
+      <p>
+        <a
+          href="https://github.com/tyrw/survey-dev-tutorial"
+          target="_blank"
+          rel="noreferrer"
+        >
+          See the tutorial →
+        </a>
+      </p>
     </div>
   );
 }
