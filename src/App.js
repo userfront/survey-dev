@@ -930,10 +930,10 @@ function Terms() {
         suspend or discontinue parts or all of the Services; (d) we may
         terminate, suspend or restrict your access to or use of parts or all of
         the Services; (e) we may terminate, suspend or restrict access to your
-        Account or Your Mods; and (f) we may change our eligibility criteria to
-        use the Services (and if such eligibility criteria changes are
-        prohibited by law where you live, we may revoke your right to use the
-        Services in that jurisdiction).
+        Account; and (f) we may change our eligibility criteria to use the
+        Services (and if such eligibility criteria changes are prohibited by law
+        where you live, we may revoke your right to use the Services in that
+        jurisdiction).
       </p>
       <p>
         <strong>6.2.</strong> How We Handle Ownership Disputes. Sometimes,
@@ -1045,9 +1045,8 @@ function Terms() {
         harmless Survey.dev from and against all damages, losses, and expenses
         of any kind (including without limitation reasonable attorneys' fees and
         costs) arising out of or related to: (a) your breach of this Agreement;
-        (b) your User Content, Your Mods, and Your Projects; (c) any claims from
-        your End Users; and (d) your violation of any law or regulation or the
-        rights of any third party.
+        (b) your User Content; and (c) your violation of any law or regulation
+        or the rights of any third party.
       </p>
 
       <h4>14. Dispute Resolution</h4>
@@ -1074,7 +1073,7 @@ function Terms() {
         expressly waive trial by jury, except as set forth below. Discovery and
         rights to appeal in arbitration are generally more limited than in a
         lawsuit, and other rights that you and we would have in court may not be
-        available in arbitration.There is no judge or jury in arbitration, and
+        available in arbitration. There is no judge or jury in arbitration, and
         court review of an arbitration award is limited.
       </p>
       <p>
