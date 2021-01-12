@@ -49,6 +49,7 @@ app.post("/survey-responses", async (req, res) => {
     });
     return res.send(surveyResponse);
   } catch (error) {
+    console.log("error", error);
     return res.status(401).send("Unauthorized");
   }
 });

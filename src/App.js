@@ -1,7 +1,7 @@
 import axios from "axios";
 import * as SurveyJS from "survey-react";
 import "survey-react/modern.css";
-import questions from "./questions.js";
+// import questions from "./questions.js";
 import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -12,6 +12,21 @@ import {
   Redirect,
 } from "react-router-dom";
 import Userfront from "@userfront/react";
+const questions = {
+  navigationTitle: "Pay",
+  name: "pay",
+  questions: [
+    {
+      title:
+        "How much did you earn in 2020 from contract web projects, before tax?",
+      type: "text",
+      inputType: "number",
+      step: 100,
+      name: "payTotal",
+      placeHolder: "$ Amount you earned",
+    },
+  ],
+};
 
 const apiRoot =
   process.env.NODE_ENV === "production"
@@ -32,38 +47,22 @@ const defaultThemeColors = SurveyJS.StylesManager.ThemeColors["modern"];
 defaultThemeColors["$main-color"] = "#007bff";
 
 SurveyJS.StylesManager.applyTheme("modern");
-// const survey = new SurveyJS.Model(questions);
-const survey = new SurveyJS.Model({
-  navigationTitle: "Pay",
-  name: "pay",
-  questions: [
-    {
-      title:
-        "How much did you earn in 2020 from contract web projects, before tax?",
-      type: "text",
-      inputType: "number",
-      step: 100,
-      name: "payTotal",
-      placeHolder: "$ Amount you earned",
-    },
-  ],
-});
-survey.completedHtml = `
-<p class="pt-2">Thank you!</p>
-<h5>Every response makes the results more accurate.</h5>
-<p>Share by email, LinkedIn, Twitter</p>
-`;
+const survey = new SurveyJS.Model(questions);
+survey.showCompletedPage = false;
 
-survey.onComplete.add(({ data }) => {
-  axios.post(
-    `${apiRoot}/survey-responses`,
-    { data },
-    {
-      headers: {
-        Authorization: `Bearer ${Userfront.accessToken()}`,
-      },
-    }
-  );
+survey.onComplete.add(async ({ data }) => {
+  try {
+    await axios.post(
+      `${apiRoot}/survey-responses`,
+      { data },
+      {
+        headers: {
+          Authorization: `Bearer ${Userfront.accessToken()}`,
+        },
+      }
+    );
+    return (window.location.href = "/results?thankyou=true");
+  } catch (error) {}
 });
 
 function App() {
@@ -266,8 +265,49 @@ function Results() {
   if (!isLoggedIn()) return <Redirect to={{ pathname: "/signup" }} />;
   return (
     <div className="container py-5">
-      <h2>Results</h2>
-      <pre>{JSON.stringify(results)}</pre>
+      <h3>Thank you for being a part of Survey.dev!</h3>
+      <p>We will email you when the survey results are ready.</p>
+
+      <h3 className="mt-5">
+        Freelancers & agencies have to compete against larger corporations.
+      </h3>
+      <p>
+        Together, we can learn & share to make better decisions and compete
+        better.
+      </p>
+      <p>
+        If you know other web developers who do contract work, please take a
+        moment to share Survey.dev with them.
+      </p>
+      <div>
+        <a
+          href="mailto:?subject=Survey.dev&body=I%20took%20the%202020%20survey%20of%20web%20development%20freelancers%20%26%20agencies%3A%0D%0A%0D%0Ahttps%3A%2F%2Fsurvey.dev"
+          className="mr-2"
+        >
+          Email
+        </a>{" "}
+        |{" "}
+        <a
+          href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fsurvey.dev"
+          className="mx-2"
+        >
+          LinkedIn
+        </a>{" "}
+        |{" "}
+        <a
+          href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fsurvey.dev&text=I%20took%20the%202020%20Survey%20of%20Web%20Development%20Freelancers%20%26%20Agencies"
+          className="mx-2"
+        >
+          Twitter
+        </a>
+        |{" "}
+        <a
+          href="https://news.ycombinator.com/submitlink?u=https%3A%2F%2Fsurvey.dev&t=2020%20Survey%20of%20Web%20Development%20Freelancers%20%26%20Agencies"
+          className="mx-2"
+        >
+          Hacker News
+        </a>
+      </div>
     </div>
   );
 }
