@@ -18,12 +18,12 @@ const apiRoot =
     ? "https://api.survey.dev"
     : "http://localhost:5000";
 
-Userfront.init("5xbpy4nz");
+Userfront.init("wbmrrvn4");
 const Signup = Userfront.build({
-  toolId: "mnbrak",
+  toolId: "ldkblk",
 });
 const Login = Userfront.build({
-  toolId: "nadrrd",
+  toolId: "klnkdl",
 });
 
 const isLoggedIn = () => Userfront.accessToken();
